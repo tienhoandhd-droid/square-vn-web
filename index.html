@@ -384,7 +384,7 @@
       <div class="card">
         <label class="field" style="max-width:460px"><span>Loại bài</span>
           <select id="g-type">
-            <option value="theo_lich">Theo lịch: sáng sớm điểm tin, sau đó xen kẽ coin lớn và coin nóng</option>
+            <option value="theo_lich">Theo lịch: sáng sớm điểm tin, sau đó là coin lớn</option>
             <option value="chuyen_sau">Phân tích chuyên sâu coin lớn (bài ngắn, đọc nhanh)</option>
             <option value="top_bien_dong">Coin đang nóng: top tăng, top giảm, top biến động (Số bài = số bài mỗi phía)</option>
             <option value="diem_tin">Điểm tin thị trường</option>
@@ -435,9 +435,11 @@
         <p class="mute small" style="margin-top:0">Bài chuyên sâu mặc định viết bằng model rẻ. Model mạnh chỉ dùng cho BTC, ETH và bài bạn tự chọn coin, trong hạn mức mỗi ngày.</p>
         <div class="setting"><div><b>Trần chi phí mỗi ngày (USD)</b><p>Chạm trần thì bot dừng viết tới hôm sau. Đặt 0 nghĩa là không giới hạn.</p></div>
           <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="0.5" aria-label="Trần chi phí mỗi ngày"></div>
+        <div class="setting"><div><b>Trần số bài mỗi ngày</b><p>Tính cả bài cố định, bài xu hướng do n8n gọi và bài nháp. Binance Square cho tối đa 100 bài mỗi ngày; mặc định 95 để chừa chỗ cho bài bạn tự đăng.</p></div>
+          <input class="num" type="number" min="1" max="100" step="1" data-numvar="MAX_POSTS_PER_DAY" data-default="95" aria-label="Trần số bài mỗi ngày"></div>
         <div class="setting"><div><b>Số bài coin lớn mỗi lượt</b><p>Bot viết coin lớn 3 lượt mỗi ngày: 9:41 (luôn có BTC), 14:41 và 20:41 (luôn có ETH). Đặt 3 thì được 9 bài coin lớn mỗi ngày. Tối đa 25.</p></div>
           <input class="num" type="number" min="1" max="25" step="1" data-numvar="POST_COUNT" data-default="3" aria-label="Số bài coin lớn mỗi lượt"></div>
-        <div class="setting"><div><b>Số bài coin nóng, mỗi phía</b><p>Bot viết coin đang nóng 3 lượt mỗi ngày (11:41, 17:41, 22:41), mỗi lượt gồm ba phía: top tăng, top giảm, top biến động. Đặt 2 thì mỗi lượt có 6 bài, cả ngày 18 bài. Tối đa 10.</p></div>
+        <div class="setting"><div><b>Số bài coin nóng, mỗi phía</b><p>Chỉ dùng khi bạn tự bấm tạo bài loại "Coin đang nóng" (không còn lượt cố định). Mỗi lần gồm ba phía: top tăng, top giảm, top biến động. Đặt 2 thì mỗi lần có 6 bài. Tối đa 10.</p></div>
           <input class="num" type="number" min="1" max="10" step="1" data-numvar="MOVERS_COUNT" data-default="2" aria-label="Số bài coin nóng mỗi phía"></div>
         <div class="setting"><div><b>Số bài "dòng tiền thông minh" mỗi lượt coin nóng</b><p>Coin mà top trader đang long hoặc tiền đang vào trong khi giá chưa tăng. Lượt nào không coin nào đủ điều kiện thì không có bài. Đặt 0 để tắt. Tối đa 5.</p></div>
           <input class="num" type="number" min="0" max="5" step="1" data-numvar="SMART_COUNT" data-default="1" aria-label="Số bài dòng tiền thông minh mỗi lượt"></div>
@@ -773,7 +775,7 @@ async function loadDrafts() {
   try {
     const issues = (await gh(`/repos/${REPO}/issues?labels=nhap&state=open&per_page=30`)).filter((i) => !i.pull_request);
     setBadge(issues.length);
-    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài lúc 7:41 (điểm tin), 9:41, 14:41 và 20:41 (coin lớn), 11:41, 17:41 và 22:41 (coin nóng), hoặc bạn tạo ngay ở mục Tạo bằng AI.</div>`; return; }
+    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài cố định lúc 7:41 (điểm tin), 9:41, 14:41 và 20:41 (coin lớn). Bài xu hướng do n8n quét mỗi 15 phút rồi gọi. Bạn cũng có thể tạo ngay ở mục Tạo bằng AI.</div>`; return; }
     el.innerHTML = "";
     for (const is of issues) el.appendChild(draftCard(is));
     fillImages(el);
