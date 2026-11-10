@@ -417,7 +417,7 @@
       </div>
       <div class="card" id="setups-panel">
         <h2>Sổ kết quả kịch bản 🧭</h2>
-        <p class="mute small">Mỗi kịch bản có Entry / SL / TP đã đăng được bot chấm bằng nến 4 giờ: <b>đạt</b> = chạm TP1 trước, <b>sai</b> = chạm SL trước, <b>hết hạn</b> = sau 7 ngày chưa chạm mốc nào. Không tính phí và trượt giá, không phải kết quả giao dịch.</p>
+        <p class="mute small">Mỗi kịch bản có Entry / SL / TP đã đăng được bot chấm bằng nến 4 giờ: <b>đạt</b> = chạm TP1 trước, <b>sai</b> = chạm SL trước, <b>hết hạn</b> = sau 7 ngày chưa chạm mốc nào. Kịch bản AI thẩm định loại vẫn được ghi (nhãn "không đăng") và chấm như thường, để so luật với AI. Không tính phí và trượt giá, không phải kết quả giao dịch.</p>
         <div class="spend" id="setup-stats">Đang tải sổ kịch bản…</div>
         <div id="setup-list"></div>
       </div>
@@ -440,7 +440,7 @@
         <h2 style="margin-bottom:8px">Tiết kiệm chi phí AI</h2>
         <p class="mute small" style="margin-top:0">Bài chuyên sâu mặc định viết bằng model rẻ. Model mạnh chỉ dùng cho BTC, ETH và bài bạn tự chọn coin, trong hạn mức mỗi ngày.</p>
         <div class="setting"><div><b>Trần chi phí mỗi ngày (USD)</b><p>Chạm trần thì bot dừng viết tới hôm sau. Đặt 0 nghĩa là không giới hạn.</p></div>
-          <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="2" aria-label="Trần chi phí mỗi ngày"></div>
+          <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="5" aria-label="Trần chi phí mỗi ngày"></div>
         <div class="setting"><div><b>Trần số bài mỗi ngày</b><p>Tính cả bài cố định, bài xu hướng do n8n gọi và bài nháp. Binance Square cho tối đa 100 bài mỗi ngày; mặc định 95 để chừa chỗ cho bài bạn tự đăng.</p></div>
           <input class="num" type="number" min="1" max="100" step="1" data-numvar="MAX_POSTS_PER_DAY" data-default="95" aria-label="Trần số bài mỗi ngày"></div>
         <div class="setting"><div><b>Số bài coin lớn mỗi lượt</b><p>Bot viết coin lớn 3 lượt mỗi ngày: 9:41 (luôn có BTC), 14:41 và 20:41 (luôn có ETH). Đặt 3 thì được 9 bài coin lớn mỗi ngày. Tối đa 25.</p></div>
@@ -980,7 +980,7 @@ async function runAI() {
   finally { btn.disabled = false; }
 }
 /** Chi phí AI hôm nay (giờ Việt Nam) đọc từ sổ docs/data/usage.json trong repo bot. */
-let BUDGET = 2;
+let BUDGET = 5;
 async function loadSpend() {
   const el = $("#g-spend");
   const day = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
@@ -1012,14 +1012,18 @@ async function loadSetups() {
   const done = list.filter((s) => s.status && s.status !== "mo");
   const grp = (rows) => { const w = rows.filter((s) => s.status === "dat").length, l = rows.filter((s) => s.status === "sai").length; return { n: rows.length, w, l, rate: w + l ? Math.round((w / (w + l)) * 100) : null }; };
   const part = (name, g) => (g.n ? `${name}: ${g.n} kịch bản, đạt <b>${g.w}</b>, sai <b>${g.l}</b>${g.rate !== null ? `, tỉ lệ đạt <b>${g.rate}%</b>` : ""}` : "");
-  const all = grp(done);
-  box.innerHTML = `Đang mở: <b>${list.length - done.length}</b>. ` + ([part("Đã có kết quả", all), part("chiều tăng", grp(done.filter((s) => s.dir === "tăng"))), part("chiều giảm", grp(done.filter((s) => s.dir === "giảm"))), part("coin đi riêng", grp(done.filter((s) => s.independent))), part("coin theo BTC", grp(done.filter((s) => !s.independent)))].filter(Boolean).join(" · ") || "Chưa có kịch bản nào có kết quả.")
+  // Bài đã đăng so với kịch bản không đăng (AI loại, hoặc gần đạt mà AI không duyệt): dùng để biết luật và AI ai đúng hơn.
+  const posted = done.filter((s) => s.posted !== false);
+  const all = grp(posted);
+  box.innerHTML = `Đang mở: <b>${list.length - done.length}</b>. ` + ([part("Bài đã đăng", all), part("chiều tăng", grp(posted.filter((s) => s.dir === "tăng"))), part("chiều giảm", grp(posted.filter((s) => s.dir === "giảm"))), part("coin đi riêng", grp(posted.filter((s) => s.independent))), part("coin theo BTC", grp(posted.filter((s) => !s.independent))),
+    part("luật đạt", grp(done.filter((s) => s.ruleOk !== false))), part("gần đạt", grp(done.filter((s) => s.ruleOk === false))), part("AI duyệt", grp(done.filter((s) => s.ai?.decision === "dang"))), part("AI loại", grp(done.filter((s) => s.ai?.decision === "bo")))].filter(Boolean).join(" · ") || "Chưa có kịch bản nào có kết quả.")
     + (all.n > 0 && all.n < 30 ? ` <span style="color:var(--amber)">Mới ${all.n} mẫu, chưa đủ để kết luận.</span>` : "");
   const num = (v) => Number(Number(v).toPrecision(4)).toLocaleString("vi-VN", { maximumFractionDigits: 10 });
   const rng = (a) => (Array.isArray(a) ? `${num(a[0])} – ${num(a[1])}` : "?");
   const label = { mo: "Đang mở", dat: "Đạt TP1", sai: "Chạm SL", het_han: "Hết hạn" }, dot = { mo: "queued", dat: "success", sai: "failure", het_han: "" };
-  listEl.innerHTML = list.slice(0, 15).map((s) => `<div class="run"><span class="dot ${dot[s.status] || ""}"></span><div><div><b>${esc(s.coin)}</b> ${s.dir === "tăng" ? "📈 tăng" : "📉 giảm"}${s.score != null ? ` · điểm ${esc(String(s.score))}/10` : ""}${s.venue === "futures" ? " · chỉ có futures" : ""}</div>`
+  listEl.innerHTML = list.slice(0, 25).map((s) => `<div class="run"><span class="dot ${dot[s.status] || ""}"></span><div><div><b>${esc(s.coin)}</b> ${s.dir === "tăng" ? "📈 tăng" : "📉 giảm"}${s.score != null ? ` · điểm ${esc(String(s.score))}/10` : ""}${s.venue === "futures" ? " · chỉ có futures" : ""}${s.posted === false ? " · <span style=\"color:var(--amber)\">không đăng</span>" : ""}${s.ruleOk === false ? " · gần đạt" : ""}</div>`
     + `<div class="mute small">Entry ${rng(s.zone)} · SL ${s.sl ? rng(s.sl) : num(s.invalid)} · TP1 ${s.tp1 ? rng(s.tp1) : num(s.target)}${s.tp2 ? ` · TP2 ${rng(s.tp2)}` : ""}</div>`
+    + (s.ai ? `<div class="mute small">AI ${s.ai.decision === "dang" ? "duyệt" : "loại"} (tin cậy ${esc(String(s.ai.confidence))}/100): ${esc(s.ai.reason || "")}</div>` : "")
     + `<div class="mute small">${fmt(s.createdAt)}, ${esc(label[s.status] || s.status)}${s.resultPct != null ? ` (${s.resultPct > 0 ? "+" : ""}${String(s.resultPct).replace(".", ",")}%)` : ""}</div></div>`
     + `<span class="sp"></span>${s.url ? `<a class="small" href="${esc(s.url)}" target="_blank" rel="noopener">Xem bài</a>` : ""}</div>`).join("");
 }
