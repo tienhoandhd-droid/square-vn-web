@@ -415,6 +415,12 @@
         <div class="row" style="margin-bottom:6px"><h2>Các lần chạy gần đây</h2><span class="sp"></span><button class="btn" id="reload-runs" type="button">Tải lại</button></div>
         <div id="runs"></div>
       </div>
+      <div class="card" id="setups-panel">
+        <h2>Sổ kết quả kịch bản 🧭</h2>
+        <p class="mute small">Mỗi kịch bản có Entry / SL / TP đã đăng được bot chấm bằng nến 4 giờ: <b>đạt</b> = chạm TP1 trước, <b>sai</b> = chạm SL trước, <b>hết hạn</b> = sau 7 ngày chưa chạm mốc nào. Không tính phí và trượt giá, không phải kết quả giao dịch.</p>
+        <div class="spend" id="setup-stats">Đang tải sổ kịch bản…</div>
+        <div id="setup-list"></div>
+      </div>
     </section>
 
     <!-- CÀI ĐẶT -->
@@ -991,6 +997,32 @@ async function loadSpend() {
     + (BUDGET > 0 && spent >= BUDGET ? ` <span style="color:var(--rose)">Đã chạm trần, bot sẽ không viết thêm hôm nay.</span>` : "")
     + (d?.unpriced ? ` <span style="color:var(--amber)">Có ${d.unpriced} lượt gọi không rõ giá.</span>` : "");
 }
+/** Sổ kết quả kịch bản (docs/data/setups.json trong repo bot): tỉ lệ đạt và 15 kịch bản gần nhất. */
+async function loadSetups() {
+  const box = $("#setup-stats"), listEl = $("#setup-list");
+  if (!box) return;
+  let list = [];
+  try {
+    const res = await gh(`/repos/${REPO}/contents/docs/data/setups.json?ref=${BRANCH}`, { raw: true, accept: "application/vnd.github.raw" });
+    list = await res.json();
+  } catch (e) {
+    if (e.status !== 404) { box.textContent = "Không đọc được sổ kịch bản: " + e.message; return; } // 404 = chưa có kịch bản nào
+  }
+  if (!Array.isArray(list) || !list.length) { box.textContent = "Chưa có kịch bản nào được đăng."; listEl.innerHTML = ""; return; }
+  const done = list.filter((s) => s.status && s.status !== "mo");
+  const grp = (rows) => { const w = rows.filter((s) => s.status === "dat").length, l = rows.filter((s) => s.status === "sai").length; return { n: rows.length, w, l, rate: w + l ? Math.round((w / (w + l)) * 100) : null }; };
+  const part = (name, g) => (g.n ? `${name}: ${g.n} kịch bản, đạt <b>${g.w}</b>, sai <b>${g.l}</b>${g.rate !== null ? `, tỉ lệ đạt <b>${g.rate}%</b>` : ""}` : "");
+  const all = grp(done);
+  box.innerHTML = `Đang mở: <b>${list.length - done.length}</b>. ` + ([part("Đã có kết quả", all), part("chiều tăng", grp(done.filter((s) => s.dir === "tăng"))), part("chiều giảm", grp(done.filter((s) => s.dir === "giảm"))), part("coin đi riêng", grp(done.filter((s) => s.independent))), part("coin theo BTC", grp(done.filter((s) => !s.independent)))].filter(Boolean).join(" · ") || "Chưa có kịch bản nào có kết quả.")
+    + (all.n > 0 && all.n < 30 ? ` <span style="color:var(--amber)">Mới ${all.n} mẫu, chưa đủ để kết luận.</span>` : "");
+  const num = (v) => Number(Number(v).toPrecision(4)).toLocaleString("vi-VN", { maximumFractionDigits: 10 });
+  const rng = (a) => (Array.isArray(a) ? `${num(a[0])} – ${num(a[1])}` : "?");
+  const label = { mo: "Đang mở", dat: "Đạt TP1", sai: "Chạm SL", het_han: "Hết hạn" }, dot = { mo: "queued", dat: "success", sai: "failure", het_han: "" };
+  listEl.innerHTML = list.slice(0, 15).map((s) => `<div class="run"><span class="dot ${dot[s.status] || ""}"></span><div><div><b>${esc(s.coin)}</b> ${s.dir === "tăng" ? "📈 tăng" : "📉 giảm"}${s.score != null ? ` · điểm ${esc(String(s.score))}/10` : ""}${s.venue === "futures" ? " · chỉ có futures" : ""}</div>`
+    + `<div class="mute small">Entry ${rng(s.zone)} · SL ${s.sl ? rng(s.sl) : num(s.invalid)} · TP1 ${s.tp1 ? rng(s.tp1) : num(s.target)}${s.tp2 ? ` · TP2 ${rng(s.tp2)}` : ""}</div>`
+    + `<div class="mute small">${fmt(s.createdAt)}, ${esc(label[s.status] || s.status)}${s.resultPct != null ? ` (${s.resultPct > 0 ? "+" : ""}${String(s.resultPct).replace(".", ",")}%)` : ""}</div></div>`
+    + `<span class="sp"></span>${s.url ? `<a class="small" href="${esc(s.url)}" target="_blank" rel="noopener">Xem bài</a>` : ""}</div>`).join("");
+}
 async function loadRuns() {
   const el = $("#runs");
   try {
@@ -1035,7 +1067,7 @@ function show(tab) {
   $$("main section").forEach((s) => s.classList.toggle("hide", s.id !== tab));
   $("#m-title").textContent = TAB_TITLE[tab];
   if (tab === "cho-duyet") loadDrafts();
-  if (tab === "tao-ai") { loadRuns(); loadSpend(); }
+  if (tab === "tao-ai") { loadRuns(); loadSpend(); loadSetups(); }
   if (tab === "tong-quan") loadPosts();
   if (location.hash.slice(1) !== tab) history.replaceState(null, "", "#" + tab);
   window.scrollTo({ top: 0 });
