@@ -165,6 +165,10 @@
   .attach { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; font-size: 13.5px; color: var(--mute); }
   .attach input[type=file] { max-width: 100%; font-size: 13px; }
   .gen-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
+  .spend { margin: 0 0 18px; padding: 10px 14px; border-radius: 12px; background: var(--gold-soft); font-size: 13.5px; }
+  .spend b { font-variant-numeric: tabular-nums; }
+  .setting input.num { width: 104px; flex: 0 0 auto; background: var(--raised); border: 1px solid var(--hair); border-radius: 12px; padding: 9px 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .setting input.num:focus { border-color: var(--gold); outline: none; }
   textarea.short { min-height: 84px; }
   .tag.lang { color: var(--ivory); letter-spacing: .04em; }
   .title-input { width: 100%; background: var(--raised); border: 1px solid var(--hair); border-radius: 12px; padding: 12px 16px; font: 600 19px/1.3 var(--serif); margin-top: 16px; }
@@ -380,8 +384,8 @@
       <div class="card">
         <label class="field" style="max-width:460px"><span>Loại bài</span>
           <select id="g-type">
-            <option value="theo_lich">Theo lịch: sáng điểm tin, tối phân tích chuyên sâu</option>
-            <option value="chuyen_sau">Phân tích chuyên sâu một coin (bài dài có tiêu đề)</option>
+            <option value="theo_lich">Theo lịch: sáng điểm tin, từ trưa là phân tích chuyên sâu</option>
+            <option value="chuyen_sau">Phân tích chuyên sâu một coin (bài ngắn, đọc nhanh)</option>
             <option value="diem_tin">Điểm tin thị trường</option>
             <option value="phan_tich_coin">Phân tích kỹ thuật một coin</option>
             <option value="bien_dong">Coin biến động mạnh 24 giờ</option>
@@ -394,11 +398,15 @@
           <label class="field"><span>Coin (để trống thì bot tự chọn)</span>
             <input id="g-coin" placeholder="VD: SOL" maxlength="16" autocomplete="off" spellcheck="false" style="text-transform:uppercase">
           </label>
+          <label class="field"><span>Số bài (mỗi bài một coin)</span>
+            <input id="g-count" type="number" min="1" max="25" step="1" value="1" inputmode="numeric">
+          </label>
         </div>
         <label class="field"><span>Ý chính muốn viết (không bắt buộc, tối đa 300 ký tự)</span>
           <textarea id="g-idea" class="short" maxlength="300" placeholder="VD: funding âm nhưng giá vẫn giữ đáy, đám đông đang short"></textarea>
         </label>
-        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu bot lấy được, không lấy số từ gợi ý của bạn. Có chọn coin mà để loại bài "Theo lịch" thì bot viết bài phân tích chuyên sâu về coin đó: kỹ thuật 3 khung, dòng tiền, cá voi, tin tức, nguồn cung. Bài chuyên sâu mất khoảng 2 đến 4 phút.</p>
+        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu bot lấy được, không lấy số từ gợi ý của bạn. Có chọn coin mà để loại bài "Theo lịch" thì bot viết bài phân tích chuyên sâu về coin đó: dữ liệu gồm kỹ thuật 3 khung, dòng tiền, cá voi, tin tức, mở khoá token; bài viết ra ngắn gọn, có điểm nhấn. Khi viết nhiều bài, bot tự bỏ qua cổ phiếu mã hoá và coin không có dữ liệu phái sinh.</p>
+        <div class="spend" id="g-spend">Đang tải chi phí hôm nay…</div>
         <label class="check" style="margin:2px 0 20px"><input type="checkbox" id="g-dry"> Chỉ chạy thử, xem bài trong nhật ký mà không tạo nháp</label>
         <button class="btn gold" id="g-run" type="button">Tạo bài</button>
       </div>
@@ -420,6 +428,16 @@
           <label class="switch"><input type="checkbox" data-var="CARDS" data-on="true" data-off="false" data-default="true" aria-label="Kèm ảnh biểu đồ"><span></span></label></div>
         <div class="setting"><div><b>Dùng bài mẫu khi AI lỗi</b><p>AI hết hạn mức hoặc sai khoá thì vẫn có bài đơn giản dựng từ dữ liệu.</p></div>
           <label class="switch"><input type="checkbox" data-var="FALLBACK_TEMPLATE" data-on="true" data-off="false" data-default="true" aria-label="Dùng bài mẫu khi AI lỗi"><span></span></label></div>
+      </div>
+      <div class="card" id="cost-panel">
+        <h2 style="margin-bottom:8px">Tiết kiệm chi phí AI</h2>
+        <p class="mute small" style="margin-top:0">Bài chuyên sâu mặc định viết bằng model rẻ. Model mạnh chỉ dùng cho bài bạn tự chọn coin và bài đứng đầu mỗi lượt, trong hạn mức mỗi ngày.</p>
+        <div class="setting"><div><b>Trần chi phí mỗi ngày (USD)</b><p>Chạm trần thì bot dừng viết tới hôm sau. Đặt 0 nghĩa là không giới hạn.</p></div>
+          <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="0.5" aria-label="Trần chi phí mỗi ngày"></div>
+        <div class="setting"><div><b>Số bài mỗi lượt tự chạy</b><p>Bot tự chạy 3 lượt bài chuyên sâu mỗi ngày (12:41, 16:41, 19:41). Đặt 10 thì được khoảng 30 bài mỗi ngày. Tối đa 25.</p></div>
+          <input class="num" type="number" min="1" max="25" step="1" data-numvar="POST_COUNT" data-default="1" aria-label="Số bài mỗi lượt tự chạy"></div>
+        <div class="setting"><div><b>Số bài mỗi ngày dùng model mạnh</b><p>Đặt 0 thì mọi bài dùng model rẻ.</p></div>
+          <input class="num" type="number" min="0" max="50" step="1" data-numvar="PREMIUM_PER_DAY" data-default="2" aria-label="Số bài mỗi ngày dùng model mạnh"></div>
       </div>
       <div class="card">
         <h2 style="margin-bottom:8px">Thiết bị này</h2>
@@ -450,7 +468,9 @@ const QUICK_TAGS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE"];
 const IMG_MAX = 2 * 1024 * 1024;
 const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", chuyen_sau: "Phân tích chuyên sâu", khac: "Bài tự do" };
 // Giới hạn độ dài theo loại bài (giống LIMITS trong scripts/validate.mjs)
-const LIMITS = { chuyen_sau: { min: 1500, max: 5000 } };
+const LIMITS = { chuyen_sau: { min: 600, max: 1800 } };
+// Loại bài đăng dạng bài dài có tiêu đề (giống TITLED trong validate.mjs). Hiện không loại nào dùng.
+const TITLED = new Set();
 const limitsOf = (type) => LIMITS[type] || { min: 200, max: 1800 };
 const TITLE_MAX = 120;
 const STATUS = { da_dang: "Đã đăng", cho_duyet: "Chờ duyệt" };
@@ -745,7 +765,7 @@ async function loadDrafts() {
   try {
     const issues = (await gh(`/repos/${REPO}/issues?labels=nhap&state=open&per_page=30`)).filter((i) => !i.pull_request);
     setBadge(issues.length);
-    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài lúc 7:41 và 19:41 mỗi ngày, hoặc bạn tạo ngay ở mục Tạo bằng AI.</div>`; return; }
+    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài lúc 7:41, 12:41, 16:41 và 19:41 mỗi ngày, hoặc bạn tạo ngay ở mục Tạo bằng AI.</div>`; return; }
     el.innerHTML = "";
     for (const is of issues) el.appendChild(draftCard(is));
     fillImages(el);
@@ -766,7 +786,8 @@ function draftCard(is) {
   const warns = [...(is.body || "").matchAll(/^> ⚠️ (.*)$/gm)].map((m) => m[1]);
   const src = meta.source === "template" ? "Bài mẫu dự phòng" : meta.source === "manual" ? "Bài viết tay" : "Bài do AI soạn";
   const lang = meta.lang === "en" ? "en" : "vi";
-  const isLong = Boolean(LIMITS[meta.type]);
+  const isLong = TITLED.has(meta.type);
+  const isDeep = meta.type === "chuyen_sau";
   div.innerHTML = `
     <div class="draft">
       <div>
@@ -786,7 +807,7 @@ function draftCard(is) {
           <button class="btn gold" data-a="approve" type="button">Duyệt &amp; đăng</button>
         </div>
         <div class="status">${pending ? "Đang đăng…" : ""}</div>
-        ${isLong ? sourcesHtml(issueData(is.body || "")) : ""}
+        ${isDeep ? sourcesHtml(issueData(is.body || "")) : ""}
       </div>
       ${meta.card ? `<div class="side-img"><img data-path="${esc(meta.card)}" alt="Ảnh biểu đồ đính kèm"><label class="check"><input type="checkbox" class="use-card" checked> Đăng kèm ảnh này</label></div>` : ""}
     </div>`;
@@ -929,7 +950,10 @@ async function createManual(postNow) {
 async function runAI() {
   const coin = $("#g-coin").value.trim().toUpperCase().replace(/^\$/, "");
   if (coin && !/^[A-Z0-9]{2,15}$/.test(coin)) { toast("Mã coin chỉ gồm chữ và số, ví dụ SOL"); return; }
-  const inputs = { post_type: $("#g-type").value, dry_run: String($("#g-dry").checked), lang: $("#g-lang").value, coin, idea: $("#g-idea").value.trim().slice(0, 300) };
+  const count = Number($("#g-count").value);
+  if (!Number.isInteger(count) || count < 1 || count > 25) { toast("Số bài phải từ 1 đến 25"); return; }
+  if (coin && count > 1) { toast("Đã chọn coin thì chỉ viết 1 bài. Để trống ô Coin nếu muốn viết nhiều bài."); return; }
+  const inputs = { post_type: $("#g-type").value, dry_run: String($("#g-dry").checked), lang: $("#g-lang").value, coin, idea: $("#g-idea").value.trim().slice(0, 300), count: String(count) };
   const btn = $("#g-run"); btn.disabled = true;
   try {
     await gh(`/repos/${REPO}/actions/workflows/tao-bai.yml/dispatches`, { method: "POST", body: { ref: BRANCH, inputs } });
@@ -937,6 +961,24 @@ async function runAI() {
     setTimeout(loadRuns, 4000);
   } catch (e) { toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Actions đọc và ghi." : ""), 5000); }
   finally { btn.disabled = false; }
+}
+/** Chi phí AI hôm nay (giờ Việt Nam) đọc từ sổ docs/data/usage.json trong repo bot. */
+let BUDGET = 0.5;
+async function loadSpend() {
+  const el = $("#g-spend");
+  const day = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+  let d = null;
+  try {
+    const res = await gh(`/repos/${REPO}/contents/docs/data/usage.json?ref=${BRANCH}`, { raw: true, accept: "application/vnd.github.raw" });
+    d = (await res.json())[day] || null;
+  } catch (e) {
+    if (e.status !== 404) { el.textContent = "Không đọc được sổ chi phí: " + e.message; return; } // 404 = chưa có lượt gọi AI nào
+  }
+  const usd = (v) => v.toLocaleString("vi-VN", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  const spent = d?.usd || 0;
+  el.innerHTML = `Chi phí AI hôm nay: <b>${usd(spent)} USD</b>${BUDGET > 0 ? ` trên trần <b>${usd(BUDGET)} USD</b>` : " (không đặt trần)"} · ${d?.posts || 0} bài, trong đó ${d?.premiumPosts || 0} bài dùng model mạnh.`
+    + (BUDGET > 0 && spent >= BUDGET ? ` <span style="color:var(--rose)">Đã chạm trần, bot sẽ không viết thêm hôm nay.</span>` : "")
+    + (d?.unpriced ? ` <span style="color:var(--amber)">Có ${d.unpriced} lượt gọi không rõ giá.</span>` : "");
 }
 async function loadRuns() {
   const el = $("#runs");
@@ -961,6 +1003,15 @@ async function loadVars() {
     if (inp.dataset.var === "REQUIRE_NOTE") REQUIRE_NOTE = inp.checked;
   }
 }
+async function loadNumVars() {
+  for (const inp of $$("input[data-numvar]")) {
+    let val = inp.dataset.default;
+    try { val = (await gh(`/repos/${REPO}/actions/variables/${inp.dataset.numvar}`)).value; }
+    catch (e) { if (e.status !== 404) console.warn("Không đọc được biến", inp.dataset.numvar, e.message); } // 404 = chưa đặt, dùng mặc định
+    inp.value = val; inp.dataset.saved = val;
+    if (inp.dataset.numvar === "DAILY_BUDGET_USD") BUDGET = Number(val);
+  }
+}
 async function setVar(name, value) {
   try { await gh(`/repos/${REPO}/actions/variables/${name}`, { method: "PATCH", body: { name, value } }); }
   catch (e) { if (e.status === 404) await gh(`/repos/${REPO}/actions/variables`, { method: "POST", body: { name, value } }); else throw e; }
@@ -973,7 +1024,7 @@ function show(tab) {
   $$("main section").forEach((s) => s.classList.toggle("hide", s.id !== tab));
   $("#m-title").textContent = TAB_TITLE[tab];
   if (tab === "cho-duyet") loadDrafts();
-  if (tab === "tao-ai") loadRuns();
+  if (tab === "tao-ai") { loadRuns(); loadSpend(); }
   if (tab === "tong-quan") loadPosts();
   if (location.hash.slice(1) !== tab) history.replaceState(null, "", "#" + tab);
   window.scrollTo({ top: 0 });
@@ -1012,7 +1063,7 @@ async function unlockWith(session) {
   $("#who").textContent = EMAIL || ME;
   $("#s-repo-name").textContent = REPO;
   $("#l-pass").value = ""; $("#l-pass2").value = ""; $("#l-token").value = "";
-  loadVars(); refreshBadge();
+  loadVars(); loadNumVars(); refreshBadge();
   const want = location.hash.slice(1);
   show(TAB_TITLE[want] ? want : "tong-quan");
 }
@@ -1091,6 +1142,22 @@ $$("input[data-var]").forEach((inp) => inp.addEventListener("change", async () =
     if (inp.dataset.var === "REQUIRE_NOTE") REQUIRE_NOTE = inp.checked;
     toast("Đã lưu cài đặt");
   } catch (e) { inp.checked = !inp.checked; toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Variables." : ""), 5000); }
+}));
+
+$$("input[data-numvar]").forEach((inp) => inp.addEventListener("change", async () => {
+  const v = Number(inp.value), min = Number(inp.min), max = Number(inp.max);
+  const whole = Number(inp.step) >= 1;
+  if (inp.value.trim() === "" || !Number.isFinite(v) || v < min || v > max || (whole && !Number.isInteger(v))) {
+    toast(`Giá trị phải ${whole ? "là số nguyên " : ""}từ ${min} đến ${max}`); inp.value = inp.dataset.saved; return;
+  }
+  inp.disabled = true;
+  try {
+    await setVar(inp.dataset.numvar, String(v));
+    inp.dataset.saved = String(v);
+    if (inp.dataset.numvar === "DAILY_BUDGET_USD") BUDGET = v;
+    toast("Đã lưu cài đặt");
+  } catch (e) { inp.value = inp.dataset.saved; toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Variables." : ""), 5000); }
+  finally { inp.disabled = false; }
 }));
 
 // ================= Khởi động =================
