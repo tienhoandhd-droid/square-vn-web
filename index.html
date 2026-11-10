@@ -167,6 +167,23 @@
   .gen-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
   textarea.short { min-height: 84px; }
   .tag.lang { color: var(--ivory); letter-spacing: .04em; }
+  .title-input { width: 100%; background: var(--raised); border: 1px solid var(--hair); border-radius: 12px; padding: 12px 16px; font: 600 19px/1.3 var(--serif); margin-top: 16px; }
+  .title-input:focus { border-color: var(--gold); outline: none; }
+  .title-input + .editor { margin-top: 10px; }
+  .editor.long textarea { min-height: 560px; }
+  .preview .pv-title { font: 600 20px/1.3 var(--serif); margin-bottom: 10px; }
+  details.sources { margin-top: 16px; border: 1px solid var(--hair); border-radius: 14px; padding: 0 16px; background: rgba(255,255,255,.015); }
+  details.sources > summary { cursor: pointer; padding: 13px 0; font-weight: 500; font-size: 14px; }
+  details.sources h4 { font: 600 13px/1.2 var(--sans); color: var(--mute); text-transform: uppercase; letter-spacing: .06em; margin: 18px 0 8px; }
+  .bias { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--raised); }
+  .bias.up { color: var(--jade); } .bias.down { color: var(--rose); } .bias.flat { color: var(--amber); }
+  .sig, .fact, .newsrow { display: grid; gap: 4px 12px; padding: 7px 0; border-top: 1px solid var(--hair); font-size: 13.5px; }
+  .sig { grid-template-columns: 44px 1fr; } .sig b { font-variant-numeric: tabular-nums; text-align: right; }
+  .sig b.pos { color: var(--jade); } .sig b.neg { color: var(--rose); } .sig b.zero { color: var(--mute); }
+  .fact { grid-template-columns: minmax(0, 1fr) auto; } .fact b { font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+  .fact small, .newsrow small, .sig small { color: var(--mute); display: block; }
+  .newsrow a { overflow-wrap: anywhere; }
+  details.sources .pad { padding-bottom: 16px; }
   .status { margin-top: 14px; font-size: 14px; }
   .status:empty { display: none; }
   .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -223,6 +240,7 @@
     .card { padding: 18px; border-radius: 16px; }
     .draft { grid-template-columns: 1fr; }
     .write-grid, .gen-grid { grid-template-columns: 1fr; }
+    .editor.long textarea { min-height: 440px; }
     .write-grid textarea { min-height: 300px; }
     .draft .side-img { order: -1; }
     .draft .side-img img { max-width: 260px; }
@@ -261,7 +279,7 @@
         <ol>
           <li>Mở <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">tạo Fine-grained token</a>.</li>
           <li>Repository access: Only select repositories, chọn repo của bot.</li>
-          <li>Permissions: Actions đọc &amp; ghi, Contents chỉ đọc, Issues đọc &amp; ghi, Variables đọc &amp; ghi.</li>
+          <li>Permissions: Actions đọc &amp; ghi, Contents đọc &amp; ghi, Issues đọc &amp; ghi, Variables đọc &amp; ghi.</li>
         </ol>
       </details>
     </div>
@@ -362,7 +380,8 @@
       <div class="card">
         <label class="field" style="max-width:460px"><span>Loại bài</span>
           <select id="g-type">
-            <option value="theo_lich">Theo lịch: sáng điểm tin, tối phân tích hoặc biến động</option>
+            <option value="theo_lich">Theo lịch: sáng điểm tin, tối phân tích chuyên sâu</option>
+            <option value="chuyen_sau">Phân tích chuyên sâu một coin (bài dài có tiêu đề)</option>
             <option value="diem_tin">Điểm tin thị trường</option>
             <option value="phan_tich_coin">Phân tích kỹ thuật một coin</option>
             <option value="bien_dong">Coin biến động mạnh 24 giờ</option>
@@ -379,7 +398,7 @@
         <label class="field"><span>Ý chính muốn viết (không bắt buộc, tối đa 300 ký tự)</span>
           <textarea id="g-idea" class="short" maxlength="300" placeholder="VD: funding âm nhưng giá vẫn giữ đáy, đám đông đang short"></textarea>
         </label>
-        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu lấy từ Binance, không lấy số từ gợi ý của bạn. Có chọn coin thì bot viết bài phân tích coin đó (hoặc biến động, nếu bạn chọn loại đó).</p>
+        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu bot lấy được, không lấy số từ gợi ý của bạn. Có chọn coin mà để loại bài "Theo lịch" thì bot viết bài phân tích chuyên sâu về coin đó: kỹ thuật 3 khung, dòng tiền, cá voi, tin tức, nguồn cung. Bài chuyên sâu mất khoảng 2 đến 4 phút.</p>
         <label class="check" style="margin:2px 0 20px"><input type="checkbox" id="g-dry"> Chỉ chạy thử, xem bài trong nhật ký mà không tạo nháp</label>
         <button class="btn gold" id="g-run" type="button">Tạo bài</button>
       </div>
@@ -429,7 +448,11 @@ const NOTE_EN = "[Write 1–2 sentences of your own take here]";
 const LANG_LABEL = { vi: "VI", en: "EN" };
 const QUICK_TAGS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE"];
 const IMG_MAX = 2 * 1024 * 1024;
-const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", khac: "Bài tự do" };
+const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", chuyen_sau: "Phân tích chuyên sâu", khac: "Bài tự do" };
+// Giới hạn độ dài theo loại bài (giống LIMITS trong scripts/validate.mjs)
+const LIMITS = { chuyen_sau: { min: 1500, max: 5000 } };
+const limitsOf = (type) => LIMITS[type] || { min: 200, max: 1800 };
+const TITLE_MAX = 120;
 const STATUS = { da_dang: "Đã đăng", cho_duyet: "Chờ duyệt" };
 const TAB_TITLE = { "tong-quan": "Tổng quan", "cho-duyet": "Chờ duyệt", "viet-bai": "Viết bài", "tao-ai": "Tạo bằng AI", "cai-dat": "Cài đặt" };
 const $ = (s, el = document) => el.querySelector(s);
@@ -499,11 +522,20 @@ const hasNote = (t) => t.includes(NOTE) || t.includes(NOTE_EN);
 const cashtags = (t) => [...new Set((t.match(/\$[A-Z0-9]{2,10}\b/g) || []).map((s) => s.slice(1)))];
 let REQUIRE_NOTE = false;
 
-function checkPost(text, requireNote, lang = "vi") {
+function checkTitle(title) {
+  const t = String(title || "").trim();
+  if (!t) return "Bài dài cần có tiêu đề";
+  if (t.length > TITLE_MAX) return `Tiêu đề ${t.length} ký tự, tối đa ${TITLE_MAX}`;
+  const bad = [...BANNED, ...BANNED_EN].find((re) => re.test(t));
+  return bad ? "Tiêu đề có câu hô hào bị cấm: " + t.match(bad)[0] : "";
+}
+function checkPost(text, requireNote, lang = "vi", type = "", title = null) {
   const en = lang === "en";
+  const { min, max } = limitsOf(type);
   const out = [];
   const len = text.trim().length;
-  out.push(len < 200 ? ["err", `${len} ký tự, cần ít nhất 200`] : len > 1800 ? ["err", `${len} ký tự, tối đa 1800`] : ["ok", `${len} ký tự`]);
+  out.push(len < min ? ["err", `${len} ký tự, cần ít nhất ${min}`] : len > max ? ["err", `${len} ký tự, tối đa ${max}`] : ["ok", `${len} ký tự`]);
+  if (title !== null) { const te = checkTitle(title); out.push(te ? ["err", te] : ["ok", "Có tiêu đề"]); }
   const tags = cashtags(text);
   out.push(tags.length ? ["ok", "Cashtag " + tags.map((c) => "$" + c).join(" ")] : ["err", "Thiếu cashtag như $BTC"]);
   (en ? [...BANNED, ...BANNED_EN] : BANNED).forEach((re) => { if (re.test(text)) out.push(["err", "Câu hô hào bị cấm: " + (text.match(re) || [""])[0]]); });
@@ -514,6 +546,7 @@ function checkPost(text, requireNote, lang = "vi") {
   const c = (en ? CLICHES_EN : CLICHES).filter((x) => low.includes(x));
   if (c.length) out.push(["warn", "Văn dễ bị chấm là AI: " + c.join(", ")]);
   if (/\*\*|^#{1,3} /m.test(text)) out.push(["warn", "Có ký hiệu markdown"]);
+  if (/https?:\/\/|\bwww\./i.test(text)) out.push(["warn", "Có đường link, Square hạn chế link ra ngoài"]);
   return { items: out, ok: !out.some((x) => x[0] === "err") };
 }
 const renderChecks = (el, r) => (el.innerHTML = r.items.map(([k, m]) => `<span class="${k}">${esc(m)}</span>`).join(""));
@@ -521,18 +554,19 @@ const renderChecks = (el, r) => (el.innerHTML = r.items.map(([k, m]) => `<span c
 // ================= Trình viết: xem trước, đếm ký tự, chèn cashtag =================
 /** Bài như khi đăng: bỏ dòng giữ chỗ nhận định (giống cleanBody trong validate.mjs). */
 const cleanPost = (t) => t.split("\n").filter((l) => !hasNote(l)).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-function previewHtml(text, imgUrl) {
+function previewHtml(text, imgUrl, title = "") {
   const body = esc(cleanPost(text))
     .replace(/\$[A-Z0-9]{2,10}\b/g, (m) => `<span class="ct">${m}</span>`)
     .replace(/(^|\s)(#[\p{L}\p{N}_]+)/gu, '$1<span class="ht">$2</span>');
   return `<div class="pv-head"><div class="monogram" aria-hidden="true">SV</div><span>Xem trước trên Binance Square</span></div>
-    <div class="pv-body">${body}</div>${imgUrl ? `<img src="${esc(imgUrl)}" alt="Ảnh đính kèm">` : ""}`;
+    ${title ? `<div class="pv-title">${esc(title)}</div>` : ""}<div class="pv-body">${body}</div>${imgUrl ? `<img src="${esc(imgUrl)}" alt="Ảnh đính kèm">` : ""}`;
 }
 /**
  * Gắn công cụ cho một ô soạn bài: chip chèn cashtag, bộ đếm ký tự, xem trước, danh sách kiểm tra.
  * opts.getLang/getImg/getRequireNote là hàm để luôn đọc giá trị mới nhất. Trả về hàm update().
  */
-function editorTools(ta, { tools, checks, preview, getLang = () => "vi", getImg = () => "", getRequireNote = () => false }) {
+function editorTools(ta, { tools, checks, preview, getLang = () => "vi", getImg = () => "", getRequireNote = () => false, type = "", getTitle = null }) {
+  const { min, max } = limitsOf(type);
   tools.innerHTML = QUICK_TAGS.map((c) => `<button class="chip" type="button" data-tag="${c}">$${c}</button>`).join("")
     + `<input class="chip-input" placeholder="Coin khác" maxlength="12" aria-label="Chèn cashtag coin khác"><button class="chip" type="button" data-tag="">Chèn</button><span class="counter"></span>`;
   const counter = $(".counter", tools), other = $(".chip-input", tools);
@@ -550,10 +584,10 @@ function editorTools(ta, { tools, checks, preview, getLang = () => "vi", getImg 
   other.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (other.value.trim()) { insert(other.value); other.value = ""; } } });
   function update() {
     const len = ta.value.trim().length;
-    counter.textContent = `${len} / 1800`;
-    counter.classList.toggle("err", len > 0 && (len < 200 || len > 1800));
-    renderChecks(checks, checkPost(ta.value, getRequireNote(), getLang()));
-    if (preview) preview.innerHTML = previewHtml(ta.value, getImg());
+    counter.textContent = `${len} / ${max}`;
+    counter.classList.toggle("err", len > 0 && (len < min || len > max));
+    renderChecks(checks, checkPost(ta.value, getRequireNote(), getLang(), type, getTitle ? getTitle() : null));
+    if (preview) preview.innerHTML = previewHtml(ta.value, getImg(), getTitle ? getTitle() : "");
   }
   ta.addEventListener("input", update);
   update();
@@ -571,11 +605,39 @@ function parseIssue(body = "") {
   if (m) { try { meta = JSON.parse(m[1]); } catch {} }
   return { post, meta };
 }
+/** Khối "Dữ liệu dùng để viết bài" trong issue (JSON). Không có hoặc hỏng -> null. */
+function issueData(body = "") {
+  const m = body.match(/<details><summary>Dữ liệu dùng để viết bài<\/summary>\s*```json\n([\s\S]*?)\n```/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch (e) { console.warn("Không đọc được khối dữ liệu của bản nháp:", e.message); return null; }
+}
+const fmtNum = (v) => (typeof v === "number" ? v.toLocaleString("vi-VN", { maximumSignificantDigits: 6 }) : String(v));
+const safeUrl = (u) => (/^https:\/\//.test(String(u || "")) ? String(u) : "");
+/** Bảng nguồn của bài chuyên sâu: nhận định, tín hiệu, dữ kiện, tin tức, trang chính thức. */
+function sourcesHtml(d) {
+  if (!d?.facts?.length) return "";
+  const cls = d.bias?.label === "nghiêng tăng" ? "up" : d.bias?.label === "nghiêng giảm" ? "down" : "flat";
+  const sig = (d.signals || []).map((s) => `<div class="sig"><b class="${s.points > 0 ? "pos" : s.points < 0 ? "neg" : "zero"}">${s.points > 0 ? "+" : ""}${esc(s.points)}</b><div>${esc(s.name)}<small>${esc(s.note)}</small></div></div>`).join("");
+  const facts = d.facts.map((f) => `<div class="fact"><div>${esc(f.label)}<small>${esc(f.source)}</small></div><b>${esc(fmtNum(f.value))} ${esc(f.unit || "")}</b></div>`).join("");
+  const news = (list) => (list || []).map((n) => `<div class="newsrow"><div>${safeUrl(n.url) ? `<a href="${esc(safeUrl(n.url))}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a>` : esc(n.title)}<small>${esc(n.source)}, ${fmt(n.publishedAt)}${n.category ? ", " + esc(n.category) : ""}</small></div></div>`).join("");
+  const home = safeUrl(d.info?.homepage);
+  const newsCoin = news(d.news?.coin), newsNotice = news(d.news?.notices), newsMarket = news(d.news?.market);
+  return `<details class="sources"><summary>Nguồn dữ liệu của bài (${d.facts.length} dữ kiện, ${(d.news?.coin || []).length + (d.news?.market || []).length} tin) để bạn đối chiếu</summary><div class="pad">
+    <h4>Nhận định hệ thống tính</h4><span class="bias ${cls}">${esc(d.bias?.label || "")} (${esc(d.bias?.score ?? "")} điểm)</span>
+    <p class="mute small" style="margin:8px 0 0">Điểm cộng từ các tín hiệu bên dưới theo luật cố định, thang từ -100 đến +100. Từ +25 là nghiêng tăng, từ -25 là nghiêng giảm.</p>
+    ${sig}
+    ${d.missing?.length ? `<h4>Dữ liệu không lấy được</h4><div class="warn-note" style="margin:0">${d.missing.map(esc).join("<br>")}</div>` : ""}
+    ${home || d.info?.name ? `<h4>Dự án</h4><p class="small" style="margin:0">${esc(d.info?.name || "")}${home ? ` · Trang chính thức: <a href="${esc(home)}" target="_blank" rel="noopener noreferrer">${esc(home)}</a>` : ""}</p>` : ""}
+    ${newsCoin ? `<h4>Tin về coin</h4>${newsCoin}` : ""}${newsNotice ? `<h4>Thông báo Binance</h4>${newsNotice}` : ""}${newsMarket ? `<h4>Tin chung</h4>${newsMarket}` : ""}
+    <h4>Dữ kiện</h4>${facts}
+  </div></details>`;
+}
 function rebuildIssue(body, post, meta) {
   const s = body.indexOf(START), e = body.indexOf(END);
   let out = body.slice(0, s + START.length) + "\n```text\n" + post.trim() + "\n```\n" + body.slice(e);
   out = out.replace(/<!-- meta: \{.*?\} -->/s, `<!-- meta: ${JSON.stringify(meta)} -->`);
   if (!meta.card) out = out.replace(/\n!\[Ảnh đính kèm\]\([^)]*\)\n/, "\n");
+  if (meta.title !== undefined) out = out.replace(/\n\*\*Tiêu đề:\*\* .*\n/, () => `\n**Tiêu đề:** ${meta.title} *(sửa tiêu đề trên web điều khiển)*\n`);
   return out;
 }
 function newIssueBody(post, meta) {
@@ -670,7 +732,7 @@ function renderHistory() {
           ${p.source === "template" ? `<span class="tag">bài mẫu</span>` : ""}
           ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">Xem trên Square</a>` : ""}
         </div>
-        <p>${esc(p.preview || "")}${(p.preview || "").length >= 220 ? "…" : ""}</p>
+        <p>${p.title ? `<b>${esc(p.title)}</b>\n` : ""}${esc(p.preview || "")}${(p.preview || "").length >= 220 ? "…" : ""}</p>
       </div>
     </div>`).join("");
   fillImages(el);
@@ -704,13 +766,15 @@ function draftCard(is) {
   const warns = [...(is.body || "").matchAll(/^> ⚠️ (.*)$/gm)].map((m) => m[1]);
   const src = meta.source === "template" ? "Bài mẫu dự phòng" : meta.source === "manual" ? "Bài viết tay" : "Bài do AI soạn";
   const lang = meta.lang === "en" ? "en" : "vi";
+  const isLong = Boolean(LIMITS[meta.type]);
   div.innerHTML = `
     <div class="draft">
       <div>
         <h3>${esc(TYPE[meta.type] || meta.type || "Bài viết")} <span class="coins">${(meta.coins || []).map((c) => "$" + esc(c)).join(" ")}</span></h3>
         <div class="meta"><span class="tag lang">${LANG_LABEL[lang]}</span><span>${fmt(meta.createdAt || is.created_at)}</span><span>${src}</span><a href="${esc(is.html_url)}" target="_blank" rel="noopener">#${is.number} trên GitHub</a></div>
         ${warns.map((w) => `<div class="warn-note">${esc(w)}</div>`).join("")}
-        <div class="editor"><textarea aria-label="Nội dung bài #${is.number}">${esc(post)}</textarea></div>
+        ${isLong ? `<input class="title-input" maxlength="${TITLE_MAX}" aria-label="Tiêu đề bài #${is.number}" placeholder="Tiêu đề bài" value="${esc(meta.title || "")}">` : ""}
+        <div class="editor${isLong ? " long" : ""}"><textarea aria-label="Nội dung bài #${is.number}">${esc(post)}</textarea></div>
         <div class="tools"></div>
         <div class="preview hide" style="margin-top:12px"></div>
         <div class="checks"></div>
@@ -722,13 +786,17 @@ function draftCard(is) {
           <button class="btn gold" data-a="approve" type="button">Duyệt &amp; đăng</button>
         </div>
         <div class="status">${pending ? "Đang đăng…" : ""}</div>
+        ${isLong ? sourcesHtml(issueData(is.body || "")) : ""}
       </div>
       ${meta.card ? `<div class="side-img"><img data-path="${esc(meta.card)}" alt="Ảnh biểu đồ đính kèm"><label class="check"><input type="checkbox" class="use-card" checked> Đăng kèm ảnh này</label></div>` : ""}
     </div>`;
   const ta = $("textarea", div), checks = $(".checks", div), status = $(".status", div), pv = $(".preview", div);
   const imgEl = () => $(".side-img img", div);
   const useImg = () => ($(".use-card", div)?.checked ? imgEl()?.src || "" : "");
-  const update = editorTools(ta, { tools: $(".tools", div), checks, preview: pv, getLang: () => lang, getImg: useImg, getRequireNote: () => REQUIRE_NOTE });
+  const titleEl = $(".title-input", div);
+  const getTitle = titleEl ? () => titleEl.value : null;
+  const update = editorTools(ta, { tools: $(".tools", div), checks, preview: pv, getLang: () => lang, getImg: useImg, getRequireNote: () => REQUIRE_NOTE, type: meta.type, getTitle });
+  titleEl?.addEventListener("input", update);
   $(".use-card", div)?.addEventListener("change", update);
   imgEl()?.addEventListener("load", update);
   ta.addEventListener("focus", () => {
@@ -740,6 +808,7 @@ function draftCard(is) {
     const m = { ...meta };
     const uc = $(".use-card", div);
     if (uc && !uc.checked) m.card = null;
+    if (titleEl) m.title = titleEl.value.trim();
     is = await gh(`/repos/${REPO}/issues/${is.number}`, { method: "PATCH", body: { body: rebuildIssue(is.body, ta.value, m) } });
   };
   let confirmDrop = false;
@@ -757,7 +826,7 @@ function draftCard(is) {
         div.remove(); toast("Đã bỏ bài"); refreshBadge();
       }
       if (a === "approve") {
-        const r = checkPost(ta.value, REQUIRE_NOTE, lang);
+        const r = checkPost(ta.value, REQUIRE_NOTE, lang, meta.type, getTitle ? getTitle() : null);
         if (!r.ok) { toast("Bài chưa đạt: " + r.items.filter((x) => x[0] === "err").map((x) => x[1]).join(", "), 4500); return; }
         await save();
         try { await gh(`/repos/${REPO}/issues/${is.number}/labels/duyet`, { method: "DELETE" }); } catch {}
@@ -864,7 +933,7 @@ async function runAI() {
   const btn = $("#g-run"); btn.disabled = true;
   try {
     await gh(`/repos/${REPO}/actions/workflows/tao-bai.yml/dispatches`, { method: "POST", body: { ref: BRANCH, inputs } });
-    toast("Đã bắt đầu tạo bài. Khoảng 1 đến 2 phút nữa xem mục Chờ duyệt.", 4500);
+    toast("Đã bắt đầu tạo bài. Vài phút nữa xem mục Chờ duyệt.", 4500);
     setTimeout(loadRuns, 4000);
   } catch (e) { toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Actions đọc và ghi." : ""), 5000); }
   finally { btn.disabled = false; }
