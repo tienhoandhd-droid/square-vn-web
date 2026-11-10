@@ -384,9 +384,9 @@
       <div class="card">
         <label class="field" style="max-width:460px"><span>Loại bài</span>
           <select id="g-type">
-            <option value="theo_lich">Theo lịch: sáng sớm điểm tin, chiều top tăng giảm, còn lại coin lớn</option>
+            <option value="theo_lich">Theo lịch: sáng sớm điểm tin, sau đó xen kẽ coin lớn và coin nóng</option>
             <option value="chuyen_sau">Phân tích chuyên sâu coin lớn (bài ngắn, đọc nhanh)</option>
-            <option value="top_bien_dong">Top tăng và top giảm trong ngày (Số bài = số bài mỗi phía)</option>
+            <option value="top_bien_dong">Coin đang nóng: top tăng, top giảm, top biến động (Số bài = số bài mỗi phía)</option>
             <option value="diem_tin">Điểm tin thị trường</option>
             <option value="phan_tich_coin">Phân tích kỹ thuật một coin</option>
             <option value="bien_dong">Coin biến động mạnh 24 giờ</option>
@@ -406,7 +406,7 @@
         <label class="field"><span>Ý chính muốn viết (không bắt buộc, tối đa 300 ký tự)</span>
           <textarea id="g-idea" class="short" maxlength="300" placeholder="VD: funding âm nhưng giá vẫn giữ đáy, đám đông đang short"></textarea>
         </label>
-        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu bot lấy được, không lấy số từ gợi ý của bạn. Có chọn coin mà để loại bài "Theo lịch" thì bot viết bài phân tích chuyên sâu về coin đó: dữ liệu gồm kỹ thuật 3 khung, dòng tiền gộp nhiều sàn, cá voi, tin tức, mở khoá token; bài viết ra ngắn gọn, có điểm nhấn. Coin nhỏ và coin top tăng giảm được viết bằng giọng thận trọng hơn vì phân tích kỹ thuật chỉ đúng một phần với chúng. Khi viết nhiều bài, bot tự bỏ qua cổ phiếu mã hoá và coin không có dữ liệu phái sinh.</p>
+        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu bot lấy được, không lấy số từ gợi ý của bạn. Có chọn coin mà để loại bài "Theo lịch" thì bot viết bài phân tích chuyên sâu về coin đó: dữ liệu gồm kỹ thuật 3 khung, dòng tiền gộp nhiều sàn, cá voi, tin tức, mở khoá token; bài viết ra ngắn gọn, có điểm nhấn. Coin đang nóng (top tăng, top giảm, top biến động) được viết theo cấu trúc riêng dựa trên dòng tiền, cá voi, funding, thanh khoản, kèm mức rủi ro bơm xả. Khi viết nhiều bài, bot tự bỏ qua cổ phiếu mã hoá và coin không có dữ liệu phái sinh.</p>
         <div class="spend" id="g-spend">Đang tải chi phí hôm nay…</div>
         <label class="check" style="margin:2px 0 20px"><input type="checkbox" id="g-dry"> Chỉ chạy thử, xem bài trong nhật ký mà không tạo nháp</label>
         <button class="btn gold" id="g-run" type="button">Tạo bài</button>
@@ -435,11 +435,11 @@
         <p class="mute small" style="margin-top:0">Bài chuyên sâu mặc định viết bằng model rẻ. Model mạnh chỉ dùng cho BTC, ETH và bài bạn tự chọn coin, trong hạn mức mỗi ngày.</p>
         <div class="setting"><div><b>Trần chi phí mỗi ngày (USD)</b><p>Chạm trần thì bot dừng viết tới hôm sau. Đặt 0 nghĩa là không giới hạn.</p></div>
           <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="0.5" aria-label="Trần chi phí mỗi ngày"></div>
-        <div class="setting"><div><b>Số bài coin lớn mỗi lượt</b><p>Bot viết coin lớn 3 lượt mỗi ngày: 9:41 (luôn có BTC), 12:41 và 20:41 (luôn có ETH). Đặt 5 thì được 15 bài coin lớn mỗi ngày. Tối đa 25.</p></div>
-          <input class="num" type="number" min="1" max="25" step="1" data-numvar="POST_COUNT" data-default="5" aria-label="Số bài coin lớn mỗi lượt"></div>
-        <div class="setting"><div><b>Số bài top tăng và top giảm, mỗi phía</b><p>Lượt 16:41 viết top tăng và top giảm trong ngày. Đặt 3 thì được 3 bài top tăng và 3 bài top giảm. Tối đa 10.</p></div>
-          <input class="num" type="number" min="1" max="10" step="1" data-numvar="MOVERS_COUNT" data-default="3" aria-label="Số bài top tăng và top giảm mỗi phía"></div>
-        <p class="mute small" style="margin:14px 0 0">Với hai số mặc định 5 và 3, mỗi ngày có 22 bài: 1 điểm tin lúc 7:41, 15 bài coin lớn và 6 bài top tăng giảm. Một coin không được viết lại trong vòng 6 giờ.</p>
+        <div class="setting"><div><b>Số bài coin lớn mỗi lượt</b><p>Bot viết coin lớn 3 lượt mỗi ngày: 9:41 (luôn có BTC), 14:41 và 20:41 (luôn có ETH). Đặt 3 thì được 9 bài coin lớn mỗi ngày. Tối đa 25.</p></div>
+          <input class="num" type="number" min="1" max="25" step="1" data-numvar="POST_COUNT" data-default="3" aria-label="Số bài coin lớn mỗi lượt"></div>
+        <div class="setting"><div><b>Số bài coin nóng, mỗi phía</b><p>Bot viết coin đang nóng 3 lượt mỗi ngày (11:41, 17:41, 22:41), mỗi lượt gồm ba phía: top tăng, top giảm, top biến động. Đặt 2 thì mỗi lượt có 6 bài, cả ngày 18 bài. Tối đa 10.</p></div>
+          <input class="num" type="number" min="1" max="10" step="1" data-numvar="MOVERS_COUNT" data-default="2" aria-label="Số bài coin nóng mỗi phía"></div>
+        <p class="mute small" style="margin:14px 0 0">Với hai số mặc định 3 và 2, mỗi ngày có 28 bài: 1 điểm tin lúc 7:41, 9 bài coin lớn và 18 bài coin nóng. Một coin không được viết lại trong vòng 6 giờ.</p>
         <div class="setting"><div><b>Số bài mỗi ngày dùng model mạnh</b><p>Mặc định dành cho bài BTC buổi sáng và ETH buổi tối, cùng bài bạn tự chọn coin. Đặt 0 thì mọi bài dùng model rẻ.</p></div>
           <input class="num" type="number" min="0" max="50" step="1" data-numvar="PREMIUM_PER_DAY" data-default="2" aria-label="Số bài mỗi ngày dùng model mạnh"></div>
       </div>
@@ -472,7 +472,7 @@ const QUICK_TAGS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE"];
 const IMG_MAX = 2 * 1024 * 1024;
 const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", chuyen_sau: "Phân tích chuyên sâu", khac: "Bài tự do" };
 // Loại coin của bài chuyên sâu (meta.profile): quyết định giọng phân tích. Coin lớn không cần nhãn riêng.
-const PROFILE = { gainer: "Top tăng 24h", loser: "Top giảm 24h", mover: "Biến động mạnh 24h", small: "Coin vốn hoá nhỏ" };
+const PROFILE = { gainer: "Top tăng 24h", loser: "Top giảm 24h", volatile: "Top biến động 24h", mover: "Biến động mạnh 24h", small: "Coin vốn hoá nhỏ" };
 // Giới hạn độ dài theo loại bài (giống LIMITS trong scripts/validate.mjs)
 const LIMITS = { chuyen_sau: { min: 600, max: 1800 } };
 // Loại bài đăng dạng bài dài có tiêu đề (giống TITLED trong validate.mjs). Hiện không loại nào dùng.
@@ -771,7 +771,7 @@ async function loadDrafts() {
   try {
     const issues = (await gh(`/repos/${REPO}/issues?labels=nhap&state=open&per_page=30`)).filter((i) => !i.pull_request);
     setBadge(issues.length);
-    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài lúc 7:41 (điểm tin), 9:41, 12:41 và 20:41 (coin lớn), 16:41 (top tăng giảm), hoặc bạn tạo ngay ở mục Tạo bằng AI.</div>`; return; }
+    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài lúc 7:41 (điểm tin), 9:41, 14:41 và 20:41 (coin lớn), 11:41, 17:41 và 22:41 (coin nóng), hoặc bạn tạo ngay ở mục Tạo bằng AI.</div>`; return; }
     el.innerHTML = "";
     for (const is of issues) el.appendChild(draftCard(is));
     fillImages(el);
@@ -957,7 +957,7 @@ async function runAI() {
   const coin = $("#g-coin").value.trim().toUpperCase().replace(/^\$/, "");
   if (coin && !/^[A-Z0-9]{2,15}$/.test(coin)) { toast("Mã coin chỉ gồm chữ và số, ví dụ SOL"); return; }
   const count = Number($("#g-count").value);
-  const maxCount = $("#g-type").value === "top_bien_dong" ? 10 : 25;
+  const maxCount = $("#g-type").value === "top_bien_dong" ? 10 : 25; // coin nóng: số bài mỗi phía, có 3 phía
   if (!Number.isInteger(count) || count < 1 || count > maxCount) { toast(`Số bài phải từ 1 đến ${maxCount}`); return; }
   if (coin && count > 1) { toast("Đã chọn coin thì chỉ viết 1 bài. Để trống ô Coin nếu muốn viết nhiều bài."); return; }
   const inputs = { post_type: $("#g-type").value, dry_run: String($("#g-dry").checked), lang: $("#g-lang").value, coin, idea: $("#g-idea").value.trim().slice(0, 300), count: String(count) };
