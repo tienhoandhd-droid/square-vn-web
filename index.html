@@ -143,6 +143,30 @@
   .checks span { display: inline-flex; align-items: center; gap: 7px; color: var(--mute); }
   .checks span::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .checks .ok { color: var(--jade); } .checks .warn { color: var(--amber); } .checks .err { color: var(--rose); }
+  /* ---------- Trình viết ---------- */
+  .write-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .write-grid textarea { min-height: 380px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; }
+  .chip { border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 4px 11px; font-size: 13px; color: var(--gold); cursor: pointer; }
+  .chip:hover { border-color: var(--gold); }
+  .chip-input { width: 96px; background: var(--raised); border: 1px solid var(--hair); border-radius: 999px; padding: 4px 11px; font-size: 13px; text-transform: uppercase; }
+  .chip-input:focus { border-color: var(--gold); outline: none; }
+  .chip-input::placeholder, #g-coin::placeholder { text-transform: none; }
+  .counter { margin-left: auto; font-size: 13px; color: var(--mute); font-variant-numeric: tabular-nums; }
+  .counter.err { color: var(--rose); }
+  .preview { background: var(--raised); border: 1px solid var(--hair); border-radius: 14px; padding: 16px 18px; font-size: 14.5px; line-height: 1.65; min-height: 120px; }
+  .preview .pv-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; font-size: 12.5px; color: var(--mute); }
+  .preview .pv-head .monogram { width: 28px; height: 28px; font-size: 12px; }
+  .preview .pv-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .preview .pv-body:empty::before { content: "Bài xem trước sẽ hiện ở đây."; color: var(--mute); }
+  .preview .ct { color: var(--gold); font-weight: 600; }
+  .preview .ht { color: var(--jade); }
+  .preview img { max-width: 100%; border-radius: 10px; margin-top: 12px; display: block; }
+  .attach { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; font-size: 13.5px; color: var(--mute); }
+  .attach input[type=file] { max-width: 100%; font-size: 13px; }
+  .gen-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
+  textarea.short { min-height: 84px; }
+  .tag.lang { color: var(--ivory); letter-spacing: .04em; }
   .status { margin-top: 14px; font-size: 14px; }
   .status:empty { display: none; }
   .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -198,6 +222,8 @@
     .ledger b { font-size: 28px; }
     .card { padding: 18px; border-radius: 16px; }
     .draft { grid-template-columns: 1fr; }
+    .write-grid, .gen-grid { grid-template-columns: 1fr; }
+    .write-grid textarea { min-height: 300px; }
     .draft .side-img { order: -1; }
     .draft .side-img img { max-width: 260px; }
     textarea { min-height: 340px; font-size: 16px; padding: 14px; }
@@ -304,10 +330,27 @@
     <section id="viet-bai" class="page hide">
       <div class="page-head"><h2>Viết bài</h2><p>Bài của bạn đi qua cùng bước kiểm tra như bài của bot. Gắn cashtag như $BTC để được tính hoa hồng Write to Earn.</p></div>
       <div class="card">
-        <label class="field" style="max-width:320px"><span>Loại bài</span>
+        <div class="row" style="align-items:flex-end">
+        <label class="field" style="flex:1;min-width:180px;max-width:280px"><span>Ngôn ngữ</span>
+          <select id="w-lang"><option value="vi">Tiếng Việt</option><option value="en">English</option></select>
+        </label>
+        <label class="field" style="flex:1;min-width:180px;max-width:280px"><span>Loại bài</span>
           <select id="w-type"><option value="khac">Bài tự do</option><option value="diem_tin">Điểm tin</option><option value="phan_tich_coin">Phân tích coin</option><option value="bien_dong">Biến động mạnh</option></select>
         </label>
-        <textarea id="w-body" aria-label="Nội dung bài" placeholder="$BTC vừa lấy lại mốc… Anh em nghĩ sao?&#10;&#10;Không phải lời khuyên đầu tư. DYOR.&#10;#BinanceSquare #BTC"></textarea>
+        </div>
+        <div class="write-grid">
+          <div>
+            <textarea id="w-body" aria-label="Nội dung bài" placeholder="$BTC vừa lấy lại mốc… Anh em nghĩ sao?&#10;&#10;Không phải lời khuyên đầu tư. DYOR.&#10;#BinanceSquare #BTC"></textarea>
+            <div class="tools" id="w-tools"></div>
+            <div class="attach">
+              <label class="btn small" for="w-img" style="padding:6px 14px">Đính kèm ảnh</label>
+              <input type="file" id="w-img" accept="image/png,image/jpeg" class="hide">
+              <span id="w-img-name">PNG hoặc JPG, tối đa 2 MB</span>
+              <button class="chip hide" id="w-img-clear" type="button">Bỏ ảnh</button>
+            </div>
+          </div>
+          <div class="preview" aria-label="Xem trước bài trên Square" id="w-preview"></div>
+        </div>
         <div class="checks" id="w-checks"></div>
         <div class="actions"><button class="btn" id="w-save" type="button">Lưu nháp</button><span class="sp"></span><button class="btn gold" id="w-post" type="button">Đăng ngay</button></div>
       </div>
@@ -325,6 +368,18 @@
             <option value="bien_dong">Coin biến động mạnh 24 giờ</option>
           </select>
         </label>
+        <div class="gen-grid">
+          <label class="field"><span>Ngôn ngữ</span>
+            <select id="g-lang"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="ca_hai">Cả hai (2 bài riêng)</option></select>
+          </label>
+          <label class="field"><span>Coin (để trống thì bot tự chọn)</span>
+            <input id="g-coin" placeholder="VD: SOL" maxlength="16" autocomplete="off" spellcheck="false" style="text-transform:uppercase">
+          </label>
+        </div>
+        <label class="field"><span>Ý chính muốn viết (không bắt buộc, tối đa 300 ký tự)</span>
+          <textarea id="g-idea" class="short" maxlength="300" placeholder="VD: funding âm nhưng giá vẫn giữ đáy, đám đông đang short"></textarea>
+        </label>
+        <p class="mute small" style="margin:-6px 0 16px">AI chỉ dùng số liệu lấy từ Binance, không lấy số từ gợi ý của bạn. Có chọn coin thì bot viết bài phân tích coin đó (hoặc biến động, nếu bạn chọn loại đó).</p>
         <label class="check" style="margin:2px 0 20px"><input type="checkbox" id="g-dry"> Chỉ chạy thử, xem bài trong nhật ký mà không tạo nháp</label>
         <button class="btn gold" id="g-run" type="button">Tạo bài</button>
       </div>
@@ -370,6 +425,10 @@ const VAULT_KEY = "sqvn_vault";      // localStorage: token đã mã hoá
 const SESSION_KEY = "sqvn_session";  // sessionStorage: phiên đã mở khoá (mất khi đóng tab)
 const START = "<!-- BAI_VIET_BAT_DAU -->", END = "<!-- BAI_VIET_KET_THUC -->";
 const NOTE = "[Viết 1–2 câu nhận định của bạn ở đây]";
+const NOTE_EN = "[Write 1–2 sentences of your own take here]";
+const LANG_LABEL = { vi: "VI", en: "EN" };
+const QUICK_TAGS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE"];
+const IMG_MAX = 2 * 1024 * 1024;
 const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", khac: "Bài tự do" };
 const STATUS = { da_dang: "Đã đăng", cho_duyet: "Chờ duyệt" };
 const TAB_TITLE = { "tong-quan": "Tổng quan", "cho-duyet": "Chờ duyệt", "viet-bai": "Viết bài", "tao-ai": "Tạo bằng AI", "cai-dat": "Cài đặt" };
@@ -431,26 +490,75 @@ async function gh(path, { method = "GET", body, raw = false, accept } = {}) {
 
 // ================= Kiểm tra bài (giống scripts/validate.mjs) =================
 const BANNED = [/\bx\s?(10|20|50|100)\b/i, /chắc chắn (tăng|lên|x)/i, /mua ngay/i, /all[- ]?in/i, /cam kết lợi nhuận/i, /lợi nhuận đảm bảo/i, /không thể thua/i];
+const BANNED_EN = [/\bguaranteed?\b/i, /can'?t lose/i, /\bbuy now\b/i, /risk[- ]free/i, /to the moon/i, /\b(10|20|50|100)x\b/i];
 const CLICHES = ["trong bối cảnh", "hãy cùng tìm hiểu", "không thể phủ nhận", "tóm lại,", "nhìn chung,", "bạn có biết"];
+const CLICHES_EN = ["delve", "ever-evolving", "it's important to note", "landscape", "game-changer", "navigate", "buckle up", "in conclusion"];
+const DISCLAIMER_RE = { vi: /không phải lời khuyên đầu tư/i, en: /not financial advice/i };
+const noteOf = (lang) => (lang === "en" ? NOTE_EN : NOTE);
+const hasNote = (t) => t.includes(NOTE) || t.includes(NOTE_EN);
 const cashtags = (t) => [...new Set((t.match(/\$[A-Z0-9]{2,10}\b/g) || []).map((s) => s.slice(1)))];
 let REQUIRE_NOTE = false;
 
-function checkPost(text, requireNote) {
+function checkPost(text, requireNote, lang = "vi") {
+  const en = lang === "en";
   const out = [];
   const len = text.trim().length;
   out.push(len < 200 ? ["err", `${len} ký tự, cần ít nhất 200`] : len > 1800 ? ["err", `${len} ký tự, tối đa 1800`] : ["ok", `${len} ký tự`]);
   const tags = cashtags(text);
   out.push(tags.length ? ["ok", "Cashtag " + tags.map((c) => "$" + c).join(" ")] : ["err", "Thiếu cashtag như $BTC"]);
-  BANNED.forEach((re) => { if (re.test(text)) out.push(["err", "Câu hô hào bị cấm: " + (text.match(re) || [""])[0]]); });
-  if (text.includes(NOTE)) out.push([requireNote ? "err" : "warn", requireNote ? "Chưa viết nhận định riêng" : "Chưa viết nhận định riêng, dòng ✍️ sẽ bị xoá"]);
+  (en ? [...BANNED, ...BANNED_EN] : BANNED).forEach((re) => { if (re.test(text)) out.push(["err", "Câu hô hào bị cấm: " + (text.match(re) || [""])[0]]); });
+  if (text.trim() && !DISCLAIMER_RE[en ? "en" : "vi"].test(text)) out.push(en ? ["err", 'Thiếu "Not financial advice."'] : ["warn", 'Thiếu "Không phải lời khuyên đầu tư."']);
+  if (hasNote(text)) out.push([requireNote ? "err" : "warn", requireNote ? "Chưa viết nhận định riêng" : "Chưa viết nhận định riêng, dòng ✍️ sẽ bị xoá"]);
   else if (text.trim()) out.push(["ok", "Có nhận định riêng"]);
   const low = text.toLowerCase();
-  const c = CLICHES.filter((x) => low.includes(x));
+  const c = (en ? CLICHES_EN : CLICHES).filter((x) => low.includes(x));
   if (c.length) out.push(["warn", "Văn dễ bị chấm là AI: " + c.join(", ")]);
   if (/\*\*|^#{1,3} /m.test(text)) out.push(["warn", "Có ký hiệu markdown"]);
   return { items: out, ok: !out.some((x) => x[0] === "err") };
 }
 const renderChecks = (el, r) => (el.innerHTML = r.items.map(([k, m]) => `<span class="${k}">${esc(m)}</span>`).join(""));
+
+// ================= Trình viết: xem trước, đếm ký tự, chèn cashtag =================
+/** Bài như khi đăng: bỏ dòng giữ chỗ nhận định (giống cleanBody trong validate.mjs). */
+const cleanPost = (t) => t.split("\n").filter((l) => !hasNote(l)).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+function previewHtml(text, imgUrl) {
+  const body = esc(cleanPost(text))
+    .replace(/\$[A-Z0-9]{2,10}\b/g, (m) => `<span class="ct">${m}</span>`)
+    .replace(/(^|\s)(#[\p{L}\p{N}_]+)/gu, '$1<span class="ht">$2</span>');
+  return `<div class="pv-head"><div class="monogram" aria-hidden="true">SV</div><span>Xem trước trên Binance Square</span></div>
+    <div class="pv-body">${body}</div>${imgUrl ? `<img src="${esc(imgUrl)}" alt="Ảnh đính kèm">` : ""}`;
+}
+/**
+ * Gắn công cụ cho một ô soạn bài: chip chèn cashtag, bộ đếm ký tự, xem trước, danh sách kiểm tra.
+ * opts.getLang/getImg/getRequireNote là hàm để luôn đọc giá trị mới nhất. Trả về hàm update().
+ */
+function editorTools(ta, { tools, checks, preview, getLang = () => "vi", getImg = () => "", getRequireNote = () => false }) {
+  tools.innerHTML = QUICK_TAGS.map((c) => `<button class="chip" type="button" data-tag="${c}">$${c}</button>`).join("")
+    + `<input class="chip-input" placeholder="Coin khác" maxlength="12" aria-label="Chèn cashtag coin khác"><button class="chip" type="button" data-tag="">Chèn</button><span class="counter"></span>`;
+  const counter = $(".counter", tools), other = $(".chip-input", tools);
+  const insert = (coin) => {
+    const c = coin.trim().toUpperCase().replace(/^\$/, "");
+    if (!/^[A-Z0-9]{2,10}$/.test(c)) { toast("Mã coin chỉ gồm chữ và số, 2–10 ký tự"); return; }
+    const before = ta.value.slice(0, ta.selectionStart);
+    ta.setRangeText((before && !/\s$/.test(before) ? " " : "") + "$" + c + " ", ta.selectionStart, ta.selectionEnd, "end");
+    ta.focus(); update();
+  };
+  tools.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-tag]"); if (!b) return;
+    if (b.dataset.tag) insert(b.dataset.tag); else if (other.value.trim()) { insert(other.value); other.value = ""; }
+  });
+  other.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (other.value.trim()) { insert(other.value); other.value = ""; } } });
+  function update() {
+    const len = ta.value.trim().length;
+    counter.textContent = `${len} / 1800`;
+    counter.classList.toggle("err", len > 0 && (len < 200 || len > 1800));
+    renderChecks(checks, checkPost(ta.value, getRequireNote(), getLang()));
+    if (preview) preview.innerHTML = previewHtml(ta.value, getImg());
+  }
+  ta.addEventListener("input", update);
+  update();
+  return update;
+}
 
 // ================= Issue <-> bài viết (giống scripts/issue.mjs) =================
 function parseIssue(body = "") {
@@ -555,6 +663,7 @@ function renderHistory() {
       <div>
         <div class="meta">
           <span class="tag ${p.status === "da_dang" ? "ok" : "wait"}">${STATUS[p.status] || esc(p.status)}</span>
+          ${p.lang === "en" ? `<span class="tag lang">EN</span>` : ""}
           <span>${TYPE[p.type] || esc(p.type || "")}</span>
           <span class="coins">${(p.coins || []).map((c) => "$" + esc(c)).join(" ")}</span>
           <span>${fmt(p.publishedAt || p.createdAt)}</span>
@@ -594,16 +703,20 @@ function draftCard(is) {
   const pending = (is.labels || []).some((l) => l.name === "duyet");
   const warns = [...(is.body || "").matchAll(/^> ⚠️ (.*)$/gm)].map((m) => m[1]);
   const src = meta.source === "template" ? "Bài mẫu dự phòng" : meta.source === "manual" ? "Bài viết tay" : "Bài do AI soạn";
+  const lang = meta.lang === "en" ? "en" : "vi";
   div.innerHTML = `
     <div class="draft">
       <div>
         <h3>${esc(TYPE[meta.type] || meta.type || "Bài viết")} <span class="coins">${(meta.coins || []).map((c) => "$" + esc(c)).join(" ")}</span></h3>
-        <div class="meta"><span>${fmt(meta.createdAt || is.created_at)}</span><span>${src}</span><a href="${esc(is.html_url)}" target="_blank" rel="noopener">#${is.number} trên GitHub</a></div>
+        <div class="meta"><span class="tag lang">${LANG_LABEL[lang]}</span><span>${fmt(meta.createdAt || is.created_at)}</span><span>${src}</span><a href="${esc(is.html_url)}" target="_blank" rel="noopener">#${is.number} trên GitHub</a></div>
         ${warns.map((w) => `<div class="warn-note">${esc(w)}</div>`).join("")}
         <div class="editor"><textarea aria-label="Nội dung bài #${is.number}">${esc(post)}</textarea></div>
+        <div class="tools"></div>
+        <div class="preview hide" style="margin-top:12px"></div>
         <div class="checks"></div>
         <div class="actions">
           <button class="btn ghost-rose" data-a="drop" type="button">Bỏ bài</button>
+          <button class="btn" data-a="preview" type="button">Xem trước</button>
           <span class="sp"></span>
           <button class="btn" data-a="save" type="button">Lưu</button>
           <button class="btn gold" data-a="approve" type="button">Duyệt &amp; đăng</button>
@@ -612,12 +725,15 @@ function draftCard(is) {
       </div>
       ${meta.card ? `<div class="side-img"><img data-path="${esc(meta.card)}" alt="Ảnh biểu đồ đính kèm"><label class="check"><input type="checkbox" class="use-card" checked> Đăng kèm ảnh này</label></div>` : ""}
     </div>`;
-  const ta = $("textarea", div), checks = $(".checks", div), status = $(".status", div);
-  const update = () => renderChecks(checks, checkPost(ta.value, REQUIRE_NOTE));
-  ta.addEventListener("input", update); update();
+  const ta = $("textarea", div), checks = $(".checks", div), status = $(".status", div), pv = $(".preview", div);
+  const imgEl = () => $(".side-img img", div);
+  const useImg = () => ($(".use-card", div)?.checked ? imgEl()?.src || "" : "");
+  const update = editorTools(ta, { tools: $(".tools", div), checks, preview: pv, getLang: () => lang, getImg: useImg, getRequireNote: () => REQUIRE_NOTE });
+  $(".use-card", div)?.addEventListener("change", update);
+  imgEl()?.addEventListener("load", update);
   ta.addEventListener("focus", () => {
-    const i = ta.value.indexOf(NOTE);
-    if (i >= 0 && ta.selectionStart === 0 && ta.selectionEnd === 0) ta.setSelectionRange(i, i + NOTE.length);
+    const n = noteOf(lang), i = ta.value.indexOf(n);
+    if (i >= 0 && ta.selectionStart === 0 && ta.selectionEnd === 0) ta.setSelectionRange(i, i + n.length);
   }, { once: true });
 
   const save = async () => {
@@ -630,6 +746,7 @@ function draftCard(is) {
   div.addEventListener("click", async (ev) => {
     const btn = ev.target.closest("button[data-a]"); if (!btn) return;
     const a = btn.dataset.a;
+    if (a === "preview") { pv.classList.toggle("hide"); btn.textContent = pv.classList.contains("hide") ? "Xem trước" : "Ẩn xem trước"; return; }
     if (a === "drop" && !confirmDrop) { confirmDrop = true; btn.textContent = "Bấm lần nữa để bỏ"; setTimeout(() => { confirmDrop = false; btn.textContent = "Bỏ bài"; }, 4000); return; }
     const btns = $$("button", div); btns.forEach((b) => (b.disabled = true));
     let keepDisabled = false;
@@ -640,7 +757,7 @@ function draftCard(is) {
         div.remove(); toast("Đã bỏ bài"); refreshBadge();
       }
       if (a === "approve") {
-        const r = checkPost(ta.value, REQUIRE_NOTE);
+        const r = checkPost(ta.value, REQUIRE_NOTE, lang);
         if (!r.ok) { toast("Bài chưa đạt: " + r.items.filter((x) => x[0] === "err").map((x) => x[1]).join(", "), 4500); return; }
         await save();
         try { await gh(`/repos/${REPO}/issues/${is.number}/labels/duyet`, { method: "DELETE" }); } catch {}
@@ -685,26 +802,55 @@ async function refreshBadge() {
 }
 
 // ================= Viết bài =================
-function wUpdate() { renderChecks($("#w-checks"), checkPost($("#w-body").value, false)); }
+let W_IMG = null, W_IMG_URL = "", wUpdate = () => {};
+function setWImage(file) {
+  if (W_IMG_URL) URL.revokeObjectURL(W_IMG_URL);
+  W_IMG = null; W_IMG_URL = "";
+  if (file) {
+    if (!["image/png", "image/jpeg"].includes(file.type)) { toast("Chỉ nhận ảnh PNG hoặc JPG"); file = null; }
+    else if (file.size > IMG_MAX) { toast(`Ảnh ${(file.size / 1048576).toFixed(1)} MB, tối đa 2 MB`); file = null; }
+  }
+  if (file) { W_IMG = file; W_IMG_URL = URL.createObjectURL(file); }
+  $("#w-img-name").textContent = W_IMG ? `${W_IMG.name} (${Math.round(W_IMG.size / 1024)} KB)` : "PNG hoặc JPG, tối đa 2 MB";
+  $("#w-img-clear").classList.toggle("hide", !W_IMG);
+  if (!W_IMG) $("#w-img").value = "";
+  wUpdate();
+}
+/** Lưu ảnh vào repo private (docs/uploads/) để bot đăng kèm. Trả về đường dẫn trong repo. */
+async function uploadImage(file) {
+  const data = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",")[1]);
+    r.onerror = () => reject(new Error("Không đọc được file ảnh"));
+    r.readAsDataURL(file);
+  });
+  const ext = file.type === "image/png" ? "png" : "jpg";
+  const base = file.name.replace(/\.[^.]+$/, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 40) || "anh";
+  const path = `docs/uploads/${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}-${base}.${ext}`;
+  await gh(`/repos/${REPO}/contents/${path}`, { method: "PUT", body: { message: `web: ảnh đính kèm ${base}.${ext}`, content: data, branch: BRANCH } });
+  return path;
+}
 async function ensureLabels() {
   for (const [name, color, description] of [["nhap", "FBCA04", "Bản nháp chờ duyệt"], ["duyet", "0E8A16", "Duyệt để đăng lên Binance Square"]]) {
-    try { await gh(`/repos/${REPO}/labels`, { method: "POST", body: { name, color, description } }); } catch {}
+    try { await gh(`/repos/${REPO}/labels`, { method: "POST", body: { name, color, description } }); }
+    catch (e) { if (e.status !== 422) throw e; } // 422 = nhãn đã có
   }
 }
 async function createManual(postNow) {
-  const text = $("#w-body").value;
-  const r = checkPost(text, false);
+  const text = $("#w-body").value, lang = $("#w-lang").value;
+  const r = checkPost(text, false, lang);
   if (!r.ok) { toast("Bài chưa đạt: " + r.items.filter((x) => x[0] === "err").map((x) => x[1]).join(", "), 4500); return; }
   const type = $("#w-type").value;
-  const meta = { type, coins: cashtags(text), createdAt: new Date().toISOString(), model: "viet-tay", source: "manual", card: null };
-  const title = `[Nháp] ${TYPE[type]} – ${meta.coins.map((c) => "$" + c).join(" ")} – viết tay`;
+  const meta = { type, coins: cashtags(text), createdAt: new Date().toISOString(), model: "viet-tay", source: "manual", card: null, lang };
+  const title = `[Nháp${lang === "en" ? " EN" : ""}] ${TYPE[type]} – ${meta.coins.map((c) => "$" + c).join(" ")} – viết tay`;
   $$("#viet-bai button").forEach((b) => (b.disabled = true));
   try {
+    if (W_IMG) { toast("Đang tải ảnh lên…"); meta.card = await uploadImage(W_IMG); }
     await ensureLabels();
     const is = await gh(`/repos/${REPO}/issues`, { method: "POST", body: { title, body: newIssueBody(text, meta), labels: ["nhap"] } });
     if (postNow) { await gh(`/repos/${REPO}/issues/${is.number}/labels`, { method: "POST", body: { labels: ["duyet"] } }); toast("Đã gửi đăng. Theo dõi ở mục Chờ duyệt.", 4000); }
     else toast("Đã lưu nháp ở mục Chờ duyệt");
-    $("#w-body").value = ""; wUpdate();
+    $("#w-body").value = ""; setWImage(null);
     show("cho-duyet");
   } catch (e) { toast("Lỗi: " + e.message, 4500); }
   finally { $$("#viet-bai button").forEach((b) => (b.disabled = false)); }
@@ -712,9 +858,12 @@ async function createManual(postNow) {
 
 // ================= Tạo bằng AI =================
 async function runAI() {
+  const coin = $("#g-coin").value.trim().toUpperCase().replace(/^\$/, "");
+  if (coin && !/^[A-Z0-9]{2,15}$/.test(coin)) { toast("Mã coin chỉ gồm chữ và số, ví dụ SOL"); return; }
+  const inputs = { post_type: $("#g-type").value, dry_run: String($("#g-dry").checked), lang: $("#g-lang").value, coin, idea: $("#g-idea").value.trim().slice(0, 300) };
   const btn = $("#g-run"); btn.disabled = true;
   try {
-    await gh(`/repos/${REPO}/actions/workflows/tao-bai.yml/dispatches`, { method: "POST", body: { ref: BRANCH, inputs: { post_type: $("#g-type").value, dry_run: String($("#g-dry").checked) } } });
+    await gh(`/repos/${REPO}/actions/workflows/tao-bai.yml/dispatches`, { method: "POST", body: { ref: BRANCH, inputs } });
     toast("Đã bắt đầu tạo bài. Khoảng 1 đến 2 phút nữa xem mục Chờ duyệt.", 4500);
     setTimeout(loadRuns, 4000);
   } catch (e) { toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Actions đọc và ghi." : ""), 5000); }
@@ -853,7 +1002,10 @@ window.addEventListener("hashchange", () => { const t = location.hash.slice(1); 
 $("#hist-filter").addEventListener("change", renderHistory);
 $("#reload-drafts").addEventListener("click", loadDrafts);
 $("#reload-runs").addEventListener("click", loadRuns);
-$("#w-body").addEventListener("input", wUpdate);
+wUpdate = editorTools($("#w-body"), { tools: $("#w-tools"), checks: $("#w-checks"), preview: $("#w-preview"), getLang: () => $("#w-lang").value, getImg: () => W_IMG_URL });
+$("#w-lang").addEventListener("change", () => wUpdate());
+$("#w-img").addEventListener("change", (e) => setWImage(e.target.files[0] || null));
+$("#w-img-clear").addEventListener("click", () => setWImage(null));
 $("#w-save").addEventListener("click", () => createManual(false));
 $("#w-post").addEventListener("click", () => createManual(true));
 $("#g-run").addEventListener("click", runAI);
