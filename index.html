@@ -440,7 +440,7 @@
         <h2 style="margin-bottom:8px">Tiết kiệm chi phí AI</h2>
         <p class="mute small" style="margin-top:0">Bài chuyên sâu mặc định viết bằng model rẻ. Model mạnh chỉ dùng cho BTC, ETH và bài bạn tự chọn coin, trong hạn mức mỗi ngày.</p>
         <div class="setting"><div><b>Trần chi phí mỗi ngày (USD)</b><p>Chạm trần thì bot dừng viết tới hôm sau. Đặt 0 nghĩa là không giới hạn.</p></div>
-          <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="0.5" aria-label="Trần chi phí mỗi ngày"></div>
+          <input class="num" type="number" min="0" max="100" step="0.1" data-numvar="DAILY_BUDGET_USD" data-default="2" aria-label="Trần chi phí mỗi ngày"></div>
         <div class="setting"><div><b>Trần số bài mỗi ngày</b><p>Tính cả bài cố định, bài xu hướng do n8n gọi và bài nháp. Binance Square cho tối đa 100 bài mỗi ngày; mặc định 95 để chừa chỗ cho bài bạn tự đăng.</p></div>
           <input class="num" type="number" min="1" max="100" step="1" data-numvar="MAX_POSTS_PER_DAY" data-default="95" aria-label="Trần số bài mỗi ngày"></div>
         <div class="setting"><div><b>Số bài coin lớn mỗi lượt</b><p>Bot viết coin lớn 3 lượt mỗi ngày: 9:41 (luôn có BTC), 14:41 và 20:41 (luôn có ETH). Đặt 3 thì được 9 bài coin lớn mỗi ngày. Tối đa 25.</p></div>
@@ -980,7 +980,7 @@ async function runAI() {
   finally { btn.disabled = false; }
 }
 /** Chi phí AI hôm nay (giờ Việt Nam) đọc từ sổ docs/data/usage.json trong repo bot. */
-let BUDGET = 0.5;
+let BUDGET = 2;
 async function loadSpend() {
   const el = $("#g-spend");
   const day = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
