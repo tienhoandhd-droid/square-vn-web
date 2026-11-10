@@ -439,7 +439,9 @@
           <input class="num" type="number" min="1" max="25" step="1" data-numvar="POST_COUNT" data-default="3" aria-label="Số bài coin lớn mỗi lượt"></div>
         <div class="setting"><div><b>Số bài coin nóng, mỗi phía</b><p>Bot viết coin đang nóng 3 lượt mỗi ngày (11:41, 17:41, 22:41), mỗi lượt gồm ba phía: top tăng, top giảm, top biến động. Đặt 2 thì mỗi lượt có 6 bài, cả ngày 18 bài. Tối đa 10.</p></div>
           <input class="num" type="number" min="1" max="10" step="1" data-numvar="MOVERS_COUNT" data-default="2" aria-label="Số bài coin nóng mỗi phía"></div>
-        <p class="mute small" style="margin:14px 0 0">Với hai số mặc định 3 và 2, mỗi ngày có 28 bài: 1 điểm tin lúc 7:41, 9 bài coin lớn và 18 bài coin nóng. Một coin không được viết lại trong vòng 6 giờ.</p>
+        <div class="setting"><div><b>Số bài "dòng tiền thông minh" mỗi lượt coin nóng</b><p>Coin mà top trader đang long hoặc tiền đang vào trong khi giá chưa tăng. Lượt nào không coin nào đủ điều kiện thì không có bài. Đặt 0 để tắt. Tối đa 5.</p></div>
+          <input class="num" type="number" min="0" max="5" step="1" data-numvar="SMART_COUNT" data-default="1" aria-label="Số bài dòng tiền thông minh mỗi lượt"></div>
+        <p class="mute small" style="margin:14px 0 0">Với các số mặc định 3, 2 và 1, mỗi ngày có tối đa 31 bài: 1 điểm tin lúc 7:41, 9 bài coin lớn, 18 bài coin nóng và tối đa 3 bài dòng tiền thông minh. Một coin không được viết lại trong vòng 6 giờ.</p>
         <div class="setting"><div><b>Số bài mỗi ngày dùng model mạnh</b><p>Mặc định dành cho bài BTC buổi sáng và ETH buổi tối, cùng bài bạn tự chọn coin. Đặt 0 thì mọi bài dùng model rẻ.</p></div>
           <input class="num" type="number" min="0" max="50" step="1" data-numvar="PREMIUM_PER_DAY" data-default="2" aria-label="Số bài mỗi ngày dùng model mạnh"></div>
       </div>
@@ -472,7 +474,7 @@ const QUICK_TAGS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE"];
 const IMG_MAX = 2 * 1024 * 1024;
 const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", chuyen_sau: "Phân tích chuyên sâu", khac: "Bài tự do" };
 // Loại coin của bài chuyên sâu (meta.profile): quyết định giọng phân tích. Coin lớn không cần nhãn riêng.
-const PROFILE = { gainer: "Top tăng 24h", loser: "Top giảm 24h", volatile: "Top biến động 24h", mover: "Biến động mạnh 24h", small: "Coin vốn hoá nhỏ" };
+const PROFILE = { gainer: "Top tăng 24h", loser: "Top giảm 24h", volatile: "Top biến động 24h", smart: "Dòng tiền thông minh", mover: "Biến động mạnh 24h", small: "Coin vốn hoá nhỏ" };
 // Giới hạn độ dài theo loại bài (giống LIMITS trong scripts/validate.mjs)
 const LIMITS = { chuyen_sau: { min: 600, max: 1800 } };
 // Loại bài đăng dạng bài dài có tiêu đề (giống TITLED trong validate.mjs). Hiện không loại nào dùng.
