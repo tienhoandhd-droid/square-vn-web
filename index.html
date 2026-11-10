@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17161c">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Square VN – Bàn biên tập</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #17161c;        /* nền */
+    --surface: #1f1e26;    /* mặt phẳng */
+    --raised: #282731;     /* vùng nhập liệu */
+    --hair: #35343f;       /* đường mảnh */
+    --ivory: #eeeae1;      /* chữ */
+    --mute: #a19eaa;       /* chữ phụ */
+    --gold: #cdae6e;       /* nhấn */
+    --gold-soft: rgba(205, 174, 110, .14);
+    --jade: #67c2a0;       /* tăng / đạt */
+    --rose: #e07a78;       /* giảm / lỗi */
+    --amber: #e3b45c;      /* cảnh báo */
+    --serif: "Cormorant Garamond", "Times New Roman", serif;
+    --sans: "Be Vietnam Pro", -apple-system, "Segoe UI", Roboto, sans-serif;
+    --side: 248px;
+    --navh: 64px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--ink); color: var(--ivory); font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: var(--gold); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+  .hide { display: none !important; }
+  .mute { color: var(--mute); }
+  .small { font-size: 13px; }
+  .sp { flex: 1; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  h1, h2, .serif { font-family: var(--serif); font-weight: 600; letter-spacing: .005em; }
+  h2 { font-size: 24px; margin: 0; line-height: 1.2; }
+  code { background: var(--raised); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+
+  /* ---------- Nút & ô nhập ---------- */
+  .btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--hair); background: transparent; border-radius: 999px; padding: 9px 18px; cursor: pointer; font-weight: 500; font-size: 14px; transition: border-color .15s, background .15s; }
+  .btn:hover { border-color: var(--mute); }
+  .btn.gold { background: var(--gold); color: #1c170c; border-color: var(--gold); font-weight: 600; }
+  .btn.gold:hover { background: #d9bc80; }
+  .btn.ghost-rose { color: var(--rose); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn svg { width: 16px; height: 16px; }
+  .field { display: block; margin-bottom: 16px; }
+  .field span { display: block; font-size: 13px; color: var(--mute); margin-bottom: 6px; }
+  .field input, .field select, select.plain { width: 100%; background: var(--raised); border: 1px solid var(--hair); border-radius: 12px; padding: 12px 14px; }
+  .field input:focus, .field select:focus, textarea:focus { border-color: var(--gold); outline: none; }
+  textarea { width: 100%; min-height: 300px; resize: vertical; background: var(--raised); border: 1px solid var(--hair); border-radius: 14px; padding: 16px 18px; font-size: 15.5px; line-height: 1.7; }
+  label.check { display: flex; gap: 10px; align-items: center; font-size: 14px; cursor: pointer; }
+  label.check input { width: 18px; height: 18px; accent-color: var(--gold); }
+
+  /* ---------- Màn hình đăng nhập ---------- */
+  #lock { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 32px 20px; background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(205,174,110,.10), transparent 60%), var(--ink); }
+  .lock-card { width: 100%; max-width: 400px; }
+  .monogram { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--gold); display: grid; place-items: center; font: 600 22px/1 var(--serif); color: var(--gold); letter-spacing: .02em; }
+  .lock-card h1 { font-size: 40px; line-height: 1.1; margin: 22px 0 8px; }
+  .lock-card p.lead { color: var(--mute); margin: 0 0 28px; }
+  .lock-err { color: var(--rose); font-size: 14px; min-height: 22px; margin: -6px 0 10px; }
+  .lock-card .btn.gold { width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+  .lock-foot { margin-top: 22px; font-size: 13px; color: var(--mute); }
+  .lock-foot button { background: none; border: 0; color: var(--gold); cursor: pointer; padding: 0; font-size: 13px; }
+  details.help { margin: 4px 0 18px; font-size: 13px; color: var(--mute); }
+  details.help summary { cursor: pointer; color: var(--gold); }
+  details.help ol { padding-left: 18px; margin: 8px 0 0; }
+
+  /* ---------- Khung ứng dụng ---------- */
+  #app { display: grid; grid-template-columns: var(--side) 1fr; min-height: 100vh; }
+  aside.side { position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--hair); padding: 28px 18px; display: flex; flex-direction: column; gap: 28px; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
+  .brand .monogram { width: 40px; height: 40px; font-size: 16px; }
+  .brand b { font: 600 21px/1.1 var(--serif); }
+  .brand small { display: block; color: var(--mute); font-size: 12px; }
+  nav#tabs { display: flex; flex-direction: column; gap: 2px; }
+  nav#tabs button { display: flex; align-items: center; gap: 12px; background: none; border: 0; border-radius: 12px; padding: 11px 12px; cursor: pointer; color: var(--mute); font-size: 14.5px; text-align: left; transition: color .15s, background .15s; }
+  nav#tabs button svg { width: 19px; height: 19px; flex: 0 0 auto; }
+  nav#tabs button:hover { color: var(--ivory); }
+  nav#tabs button.on { color: var(--ivory); background: var(--gold-soft); }
+  nav#tabs button.on svg { color: var(--gold); }
+  .badge { margin-left: auto; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: var(--gold); color: #1c170c; font-size: 12px; font-weight: 600; display: inline-grid; place-items: center; }
+  .side-foot { margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--hair); font-size: 13px; color: var(--mute); }
+  .side-foot b { color: var(--ivory); font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; }
+  .side-foot button { margin-top: 10px; }
+
+  main { min-width: 0; padding: 44px 48px 80px; }
+  .page { max-width: 880px; margin: 0 auto; }
+  .page-head { margin-bottom: 26px; }
+  .page-head h2 { font-size: 34px; }
+  .page-head p { margin: 6px 0 0; color: var(--mute); max-width: 60ch; }
+  .mobile-top { display: none; }
+
+  .card { background: var(--surface); border: 1px solid var(--hair); border-radius: 18px; padding: 24px; }
+  .card + .card { margin-top: 18px; }
+
+  /* ---------- Tổng quan ---------- */
+  .hero { padding: 8px 0 30px; }
+  .hero .date { color: var(--mute); font-size: 14px; }
+  .hero h1 { font-size: 52px; line-height: 1.05; margin: 8px 0 14px; font-weight: 500; }
+  .hero p { font-size: 17px; max-width: 54ch; margin: 0 0 22px; color: #d6d2ca; }
+  .ledger { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); margin-bottom: 28px; }
+  .ledger > div { padding: 18px 20px; }
+  .ledger > div + div { border-left: 1px solid var(--hair); }
+  .ledger b { display: block; font: 600 34px/1.1 var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+  .ledger span { font-size: 13px; color: var(--mute); }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; margin: 18px 0 26px; }
+  .bars div { flex: 1; background: linear-gradient(180deg, var(--gold), #a88a4e); border-radius: 3px 3px 0 0; min-height: 2px; position: relative; opacity: .9; }
+  .bars div.zero { background: var(--hair); }
+  .bars div span { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--mute); white-space: nowrap; }
+  .hist { display: grid; }
+  .item { display: grid; grid-template-columns: 56px 1fr; gap: 16px; padding: 16px 0; border-top: 1px solid var(--hair); }
+  .item:first-child { border-top: 0; padding-top: 4px; }
+  .thumb { width: 56px; height: 56px; border-radius: 10px; background: var(--raised); border: 1px solid var(--hair); object-fit: cover; display: block; }
+  .meta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--mute); }
+  .item p { margin: 4px 0 0; font-size: 14.5px; white-space: pre-line; overflow-wrap: anywhere; }
+  .tag { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: var(--raised); color: var(--mute); }
+  .tag.ok { color: var(--jade); background: rgba(103,194,160,.1); }
+  .tag.wait { color: var(--amber); background: rgba(227,180,92,.1); }
+  .coins { color: var(--gold); font-weight: 500; }
+
+  /* ---------- Chờ duyệt ---------- */
+  .draft { display: grid; grid-template-columns: 1fr 240px; gap: 24px; }
+  .draft h3 { font: 600 22px/1.2 var(--serif); margin: 0 0 4px; }
+  .draft .side-img img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 14px; border: 1px solid var(--hair); background: var(--raised); display: block; }
+  .draft .side-img label { margin-top: 12px; }
+  .warn-note { margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: rgba(227,180,92,.08); color: var(--amber); font-size: 13.5px; }
+  .editor { margin-top: 16px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 2px 18px; font-size: 13px; }
+  .checks span { display: inline-flex; align-items: center; gap: 7px; color: var(--mute); }
+  .checks span::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .checks .ok { color: var(--jade); } .checks .warn { color: var(--amber); } .checks .err { color: var(--rose); }
+  .status { margin-top: 14px; font-size: 14px; }
+  .status:empty { display: none; }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* ---------- Lần chạy ---------- */
+  .run { display: flex; gap: 14px; align-items: center; padding: 13px 0; border-top: 1px solid var(--hair); font-size: 14px; }
+  .run:first-child { border-top: 0; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--mute); flex: 0 0 auto; }
+  .dot.success { background: var(--jade); } .dot.failure { background: var(--rose); }
+  .dot.in_progress, .dot.queued { background: var(--amber); animation: pulse 1.1s ease-in-out infinite alternate; }
+  @keyframes pulse { from { opacity: .35 } to { opacity: 1 } }
+
+  /* ---------- Cài đặt ---------- */
+  .setting { display: flex; gap: 20px; align-items: center; justify-content: space-between; padding: 18px 0; border-top: 1px solid var(--hair); }
+  .setting:first-of-type { border-top: 0; padding-top: 4px; }
+  .setting b { font-weight: 500; }
+  .setting p { margin: 2px 0 0; font-size: 13.5px; color: var(--mute); max-width: 56ch; }
+  .switch { position: relative; width: 48px; height: 28px; flex: 0 0 auto; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch span { position: absolute; inset: 0; background: var(--hair); border-radius: 999px; cursor: pointer; transition: background .2s; }
+  .switch span::before { content: ""; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: var(--ivory); border-radius: 50%; transition: transform .2s; }
+  .switch input:checked + span { background: var(--gold); }
+  .switch input:checked + span::before { transform: translateX(20px); background: #1c170c; }
+  .switch input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  .empty { text-align: center; color: var(--mute); padding: 44px 12px; }
+  .empty b { display: block; font: 500 24px/1.3 var(--serif); color: var(--ivory); margin-bottom: 6px; }
+
+  #toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; background: var(--ivory); color: var(--ink); padding: 11px 20px; border-radius: 999px; font-size: 14px; font-weight: 500; transition: transform .25s ease, opacity .25s ease; z-index: 50; max-width: calc(100vw - 32px); box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+  #toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+  /* ---------- Điện thoại ---------- */
+  @media (max-width: 900px) {
+    #app { display: block; }
+    aside.side { position: static; height: auto; border: 0; padding: 0; display: contents; }
+    .brand, .side-foot { display: none; }
+    .mobile-top { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 20; padding: calc(12px + env(safe-area-inset-top)) 18px 12px; background: rgba(23,22,28,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--hair); }
+    .mobile-top .monogram { width: 34px; height: 34px; font-size: 14px; }
+    .mobile-top b { font: 600 19px/1 var(--serif); }
+    nav#tabs { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; flex-direction: row; justify-content: space-around; gap: 0;
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: rgba(31,30,38,.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--hair); }
+    nav#tabs button { flex: 1; flex-direction: column; gap: 3px; padding: 7px 2px; font-size: 11px; border-radius: 10px; text-align: center; position: relative; }
+    nav#tabs button.on { background: none; }
+    nav#tabs button .full { display: none; }
+    .badge { position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; }
+    main { padding: 22px 16px calc(var(--navh) + 40px + env(safe-area-inset-bottom)); }
+    .page-head h2 { font-size: 28px; }
+    .hero h1 { font-size: 38px; }
+    .hero p { font-size: 16px; }
+    .ledger { grid-template-columns: repeat(2, 1fr); }
+    .ledger > div:nth-child(3) { border-left: 0; }
+    .ledger > div:nth-child(n+3) { border-top: 1px solid var(--hair); }
+    .ledger b { font-size: 28px; }
+    .card { padding: 18px; border-radius: 16px; }
+    .draft { grid-template-columns: 1fr; }
+    .draft .side-img { order: -1; }
+    .draft .side-img img { max-width: 260px; }
+    textarea { min-height: 340px; font-size: 16px; padding: 14px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .actions .btn { justify-content: center; white-space: nowrap; }
+    .actions .btn.gold { grid-column: 1 / -1; order: -1; padding: 12px; }
+    .actions .sp { display: none; }
+    #toast { bottom: calc(var(--navh) + 20px + env(safe-area-inset-bottom)); }
+    .bars span { font-size: 10px; }
+  }
+  @media (max-width: 900px) and (min-width: 0) { nav#tabs button .short { display: inline; } }
+  @media (min-width: 901px) { nav#tabs button .short { display: none; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- ===================== ĐĂNG NHẬP ===================== -->
+<div id="lock">
+  <form class="lock-card" id="lock-form" autocomplete="on" novalidate>
+    <div class="monogram" aria-hidden="true">SV</div>
+    <h1 id="lock-title">Bàn biên tập Square</h1>
+    <p class="lead" id="lock-lead">Đăng nhập để xem và duyệt bài.</p>
+
+    <label class="field"><span>Email</span><input type="email" id="l-email" autocomplete="username" required></label>
+    <label class="field"><span>Mật khẩu</span><input type="password" id="l-pass" autocomplete="current-password" required></label>
+
+    <div id="setup-fields" class="hide">
+      <label class="field"><span>Nhập lại mật khẩu</span><input type="password" id="l-pass2" autocomplete="new-password"></label>
+      <label class="field"><span>Tên hiển thị (không bắt buộc)</span><input type="text" id="l-name" autocomplete="nickname" placeholder="Ví dụ: Hoàn"></label>
+      <label class="field"><span>Repo của bot</span><input type="text" id="l-repo" autocomplete="off" spellcheck="false"></label>
+      <label class="field"><span>GitHub token</span><input type="password" id="l-token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
+      <details class="help">
+        <summary>Lấy token ở đâu?</summary>
+        <ol>
+          <li>Mở <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">tạo Fine-grained token</a>.</li>
+          <li>Repository access: Only select repositories, chọn repo của bot.</li>
+          <li>Permissions: Actions đọc &amp; ghi, Contents chỉ đọc, Issues đọc &amp; ghi, Variables đọc &amp; ghi.</li>
+        </ol>
+      </details>
+    </div>
+
+    <div class="lock-err" id="lock-err" role="alert"></div>
+    <button class="btn gold" type="submit" id="l-submit">Đăng nhập</button>
+    <div class="lock-foot" id="lock-foot"></div>
+  </form>
+</div>
+
+<!-- ===================== ỨNG DỤNG ===================== -->
+<div id="app" class="hide">
+  <aside class="side">
+    <div class="brand"><div class="monogram" aria-hidden="true">SV</div><div><b>Square VN</b><small>Bàn biên tập</small></div></div>
+    <nav id="tabs" aria-label="Điều hướng">
+      <button data-t="tong-quan" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span class="full">Tổng quan</span><span class="short">Tổng quan</span></button>
+      <button data-t="cho-duyet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M8 10l3 3 5-5"/></svg><span class="full">Chờ duyệt</span><span class="short">Duyệt</span><span class="badge hide" id="badge">0</span></button>
+      <button data-t="viet-bai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg><span class="full">Viết bài</span><span class="short">Viết</span></button>
+      <button data-t="tao-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg><span class="full">Tạo bằng AI</span><span class="short">Tạo AI</span></button>
+      <button data-t="cai-dat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span class="full">Cài đặt</span><span class="short">Cài đặt</span></button>
+    </nav>
+    <div class="side-foot">
+      <span>Đang đăng nhập</span>
+      <b id="who"></b>
+      <button class="btn small" id="lock-btn" type="button">Khoá</button>
+    </div>
+  </aside>
+
+  <div>
+    <div class="mobile-top"><div class="monogram" aria-hidden="true">SV</div><b id="m-title">Tổng quan</b></div>
+    <main>
+
+    <!-- TỔNG QUAN -->
+    <section id="tong-quan" class="page">
+      <div class="hero">
+        <div class="date" id="today"></div>
+        <h1 id="greet">Chào bạn.</h1>
+        <p id="summary">Đang tải…</p>
+        <div class="row" id="hero-actions"></div>
+      </div>
+      <div class="ledger" id="stats"></div>
+      <div class="card">
+        <h2>Nhịp đăng bài 14 ngày</h2>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="margin-bottom:10px"><h2>Lịch sử</h2><span class="sp"></span>
+          <select id="hist-filter" class="plain" style="width:auto;padding:8px 12px" aria-label="Lọc lịch sử">
+            <option value="all">Tất cả</option><option value="da_dang">Đã đăng</option><option value="cho_duyet">Chờ duyệt</option>
+          </select>
+        </div>
+        <div class="hist" id="hist"></div>
+      </div>
+    </section>
+
+    <!-- CHỜ DUYỆT -->
+    <section id="cho-duyet" class="page hide">
+      <div class="page-head row">
+        <div><h2>Chờ duyệt</h2><p>Đọc lại, thêm một hai câu của riêng bạn, rồi duyệt để đăng lên Binance Square.</p></div>
+        <span class="sp"></span><button class="btn" id="reload-drafts" type="button">Tải lại</button>
+      </div>
+      <div id="drafts"></div>
+    </section>
+
+    <!-- VIẾT BÀI -->
+    <section id="viet-bai" class="page hide">
+      <div class="page-head"><h2>Viết bài</h2><p>Bài của bạn đi qua cùng bước kiểm tra như bài của bot. Gắn cashtag như $BTC để được tính hoa hồng Write to Earn.</p></div>
+      <div class="card">
+        <label class="field" style="max-width:320px"><span>Loại bài</span>
+          <select id="w-type"><option value="khac">Bài tự do</option><option value="diem_tin">Điểm tin</option><option value="phan_tich_coin">Phân tích coin</option><option value="bien_dong">Biến động mạnh</option></select>
+        </label>
+        <textarea id="w-body" aria-label="Nội dung bài" placeholder="$BTC vừa lấy lại mốc… Anh em nghĩ sao?&#10;&#10;Không phải lời khuyên đầu tư. DYOR.&#10;#BinanceSquare #BTC"></textarea>
+        <div class="checks" id="w-checks"></div>
+        <div class="actions"><button class="btn" id="w-save" type="button">Lưu nháp</button><span class="sp"></span><button class="btn gold" id="w-post" type="button">Đăng ngay</button></div>
+      </div>
+    </section>
+
+    <!-- TẠO BẰNG AI -->
+    <section id="tao-ai" class="page hide">
+      <div class="page-head"><h2>Tạo bằng AI</h2><p>Bot lấy dữ liệu thị trường mới nhất, soạn bài và vẽ ảnh biểu đồ. Khoảng một đến hai phút sau, bài xuất hiện ở mục Chờ duyệt.</p></div>
+      <div class="card">
+        <label class="field" style="max-width:460px"><span>Loại bài</span>
+          <select id="g-type">
+            <option value="theo_lich">Theo lịch: sáng điểm tin, tối phân tích hoặc biến động</option>
+            <option value="diem_tin">Điểm tin thị trường</option>
+            <option value="phan_tich_coin">Phân tích kỹ thuật một coin</option>
+            <option value="bien_dong">Coin biến động mạnh 24 giờ</option>
+          </select>
+        </label>
+        <label class="check" style="margin:2px 0 20px"><input type="checkbox" id="g-dry"> Chỉ chạy thử, xem bài trong nhật ký mà không tạo nháp</label>
+        <button class="btn gold" id="g-run" type="button">Tạo bài</button>
+      </div>
+      <div class="card">
+        <div class="row" style="margin-bottom:6px"><h2>Các lần chạy gần đây</h2><span class="sp"></span><button class="btn" id="reload-runs" type="button">Tải lại</button></div>
+        <div id="runs"></div>
+      </div>
+    </section>
+
+    <!-- CÀI ĐẶT -->
+    <section id="cai-dat" class="page hide">
+      <div class="page-head"><h2>Cài đặt</h2><p>Các công tắc lưu thẳng vào repo của bot và có hiệu lực từ lần chạy tiếp theo.</p></div>
+      <div class="card" id="vars-panel">
+        <div class="setting"><div><b>Tự động đăng</b><p>Tắt thì bot tạo nháp để bạn duyệt. Bật thì bot đăng thẳng.</p></div>
+          <label class="switch"><input type="checkbox" data-var="MODE" data-on="auto" data-off="draft" aria-label="Tự động đăng"><span></span></label></div>
+        <div class="setting"><div><b>Bắt buộc viết nhận định riêng</b><p>Chưa thay dòng ✍️ bằng ý kiến của bạn thì không cho đăng.</p></div>
+          <label class="switch"><input type="checkbox" data-var="REQUIRE_NOTE" data-on="true" data-off="false" aria-label="Bắt buộc viết nhận định riêng"><span></span></label></div>
+        <div class="setting"><div><b>Kèm ảnh biểu đồ</b><p>Vẽ ảnh 1080×1080 cho mỗi bài của bot.</p></div>
+          <label class="switch"><input type="checkbox" data-var="CARDS" data-on="true" data-off="false" data-default="true" aria-label="Kèm ảnh biểu đồ"><span></span></label></div>
+        <div class="setting"><div><b>Dùng bài mẫu khi AI lỗi</b><p>AI hết hạn mức hoặc sai khoá thì vẫn có bài đơn giản dựng từ dữ liệu.</p></div>
+          <label class="switch"><input type="checkbox" data-var="FALLBACK_TEMPLATE" data-on="true" data-off="false" data-default="true" aria-label="Dùng bài mẫu khi AI lỗi"><span></span></label></div>
+      </div>
+      <div class="card">
+        <h2 style="margin-bottom:8px">Thiết bị này</h2>
+        <p class="mute small" style="margin-top:0">Token GitHub được mã hoá bằng mật khẩu của bạn và chỉ lưu trên thiết bị này. Mã nguồn trang web không chứa mật khẩu hay token nào.</p>
+        <p class="small">Repo: <b id="s-repo-name"></b></p>
+        <div class="row"><button class="btn" id="s-logout" type="button">Khoá</button><button class="btn ghost-rose" id="s-forget" type="button">Xoá thiết bị này</button></div>
+        <p class="mute small" style="margin-bottom:0">Giờ chạy đổi trong <code>.github/workflows/tao-bai.yml</code>. Khoá Binance và AI nằm trong Settings, Secrets của repo; trang này không đọc được.</p>
+      </div>
+    </section>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ================= Cấu hình =================
+// Repo chứa bot (private). Web này có thể nằm ở repo public khác; dữ liệu luôn đọc từ repo bot qua GitHub API.
+const DEFAULT_REPO = "tienhoandhd-droid/square-vn-bot";
+const VAULT_KEY = "sqvn_vault";      // localStorage: token đã mã hoá
+const SESSION_KEY = "sqvn_session";  // sessionStorage: phiên đã mở khoá (mất khi đóng tab)
+const START = "<!-- BAI_VIET_BAT_DAU -->", END = "<!-- BAI_VIET_KET_THUC -->";
+const NOTE = "[Viết 1–2 câu nhận định của bạn ở đây]";
+const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", khac: "Bài tự do" };
+const STATUS = { da_dang: "Đã đăng", cho_duyet: "Chờ duyệt" };
+const TAB_TITLE = { "tong-quan": "Tổng quan", "cho-duyet": "Chờ duyệt", "viet-bai": "Viết bài", "tao-ai": "Tạo bằng AI", "cai-dat": "Cài đặt" };
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (iso) => iso ? new Date(iso).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+
+const ls = {
+  get: (s, k) => { try { return s.getItem(k); } catch { return null; } },
+  set: (s, k, v) => { try { v == null ? s.removeItem(k) : s.setItem(k, v); } catch {} },
+};
+
+let TOKEN = "", REPO = DEFAULT_REPO, BRANCH = "main", ME = "", EMAIL = "", NAME = "";
+const imgCache = new Map();
+
+function toast(msg, ms = 2800) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+// ================= Mã hoá token bằng mật khẩu (Web Crypto: PBKDF2 + AES-GCM) =================
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+async function deriveKey(email, password, salt) {
+  const base = await crypto.subtle.importKey("raw", enc.encode(email.trim().toLowerCase() + "\n" + password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 310000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+async function sealVault(email, password, secret) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(email, password, salt);
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(JSON.stringify(secret)));
+  return { v: 1, email: email.trim().toLowerCase(), salt: b64(salt), iv: b64(iv), ct: b64(ct) };
+}
+async function openVault(vault, email, password) {
+  if (vault.email !== email.trim().toLowerCase()) throw new Error("bad");
+  const key = await deriveKey(email, password, unb64(vault.salt));
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(vault.iv) }, key, unb64(vault.ct));
+  return JSON.parse(dec.decode(pt));
+}
+const getVault = () => { try { return JSON.parse(ls.get(localStorage, VAULT_KEY) || "null"); } catch { return null; } };
+
+// ================= GitHub API =================
+async function gh(path, { method = "GET", body, raw = false, accept } = {}) {
+  const headers = { Accept: accept || "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  if (TOKEN) headers.Authorization = `Bearer ${TOKEN}`;
+  if (body) headers["Content-Type"] = "application/json";
+  const res = await fetch(`https://api.github.com${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  if (!res.ok) {
+    let msg = `${res.status}`;
+    try { msg += " " + (await res.json()).message; } catch {}
+    const err = new Error(msg); err.status = res.status; throw err;
+  }
+  if (res.status === 204) return null;
+  return raw ? res : res.json();
+}
+
+// ================= Kiểm tra bài (giống scripts/validate.mjs) =================
+const BANNED = [/\bx\s?(10|20|50|100)\b/i, /chắc chắn (tăng|lên|x)/i, /mua ngay/i, /all[- ]?in/i, /cam kết lợi nhuận/i, /lợi nhuận đảm bảo/i, /không thể thua/i];
+const CLICHES = ["trong bối cảnh", "hãy cùng tìm hiểu", "không thể phủ nhận", "tóm lại,", "nhìn chung,", "bạn có biết"];
+const cashtags = (t) => [...new Set((t.match(/\$[A-Z0-9]{2,10}\b/g) || []).map((s) => s.slice(1)))];
+let REQUIRE_NOTE = false;
+
+function checkPost(text, requireNote) {
+  const out = [];
+  const len = text.trim().length;
+  out.push(len < 200 ? ["err", `${len} ký tự, cần ít nhất 200`] : len > 1800 ? ["err", `${len} ký tự, tối đa 1800`] : ["ok", `${len} ký tự`]);
+  const tags = cashtags(text);
+  out.push(tags.length ? ["ok", "Cashtag " + tags.map((c) => "$" + c).join(" ")] : ["err", "Thiếu cashtag như $BTC"]);
+  BANNED.forEach((re) => { if (re.test(text)) out.push(["err", "Câu hô hào bị cấm: " + (text.match(re) || [""])[0]]); });
+  if (text.includes(NOTE)) out.push([requireNote ? "err" : "warn", requireNote ? "Chưa viết nhận định riêng" : "Chưa viết nhận định riêng, dòng ✍️ sẽ bị xoá"]);
+  else if (text.trim()) out.push(["ok", "Có nhận định riêng"]);
+  const low = text.toLowerCase();
+  const c = CLICHES.filter((x) => low.includes(x));
+  if (c.length) out.push(["warn", "Văn dễ bị chấm là AI: " + c.join(", ")]);
+  if (/\*\*|^#{1,3} /m.test(text)) out.push(["warn", "Có ký hiệu markdown"]);
+  return { items: out, ok: !out.some((x) => x[0] === "err") };
+}
+const renderChecks = (el, r) => (el.innerHTML = r.items.map(([k, m]) => `<span class="${k}">${esc(m)}</span>`).join(""));
+
+// ================= Issue <-> bài viết (giống scripts/issue.mjs) =================
+function parseIssue(body = "") {
+  const s = body.indexOf(START), e = body.indexOf(END);
+  if (s < 0 || e < s) return null;
+  let post = body.slice(s + START.length, e).replace(/\r\n/g, "\n").trim();
+  post = post.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/, "").trim();
+  let meta = {};
+  const m = body.match(/<!-- meta: (\{.*?\}) -->/s);
+  if (m) { try { meta = JSON.parse(m[1]); } catch {} }
+  return { post, meta };
+}
+function rebuildIssue(body, post, meta) {
+  const s = body.indexOf(START), e = body.indexOf(END);
+  let out = body.slice(0, s + START.length) + "\n```text\n" + post.trim() + "\n```\n" + body.slice(e);
+  out = out.replace(/<!-- meta: \{.*?\} -->/s, `<!-- meta: ${JSON.stringify(meta)} -->`);
+  if (!meta.card) out = out.replace(/\n!\[Ảnh đính kèm\]\([^)]*\)\n/, "\n");
+  return out;
+}
+function newIssueBody(post, meta) {
+  return `<!-- meta: ${JSON.stringify(meta)} -->\n**Bài viết tay** tạo từ web.\n\n${START}\n\`\`\`text\n${post.trim()}\n\`\`\`\n${END}\n`;
+}
+
+// ================= Ảnh (repo private: tải qua API rồi tạo blob) =================
+async function imgSrc(path) {
+  if (!path) return "";
+  if (imgCache.has(path)) return imgCache.get(path);
+  let url = "";
+  try {
+    const res = await gh(`/repos/${REPO}/contents/${path}?ref=${BRANCH}`, { raw: true, accept: "application/vnd.github.raw" });
+    url = URL.createObjectURL(await res.blob());
+  } catch {}
+  imgCache.set(path, url);
+  return url;
+}
+async function fillImages(root) { for (const img of $$("img[data-path]", root)) { const s = await imgSrc(img.dataset.path); if (s) img.src = s; } }
+
+// ================= Tổng quan =================
+let POSTS = [], PENDING = 0;
+async function loadPosts() {
+  try {
+    const res = await gh(`/repos/${REPO}/contents/docs/data/posts.json?ref=${BRANCH}`, { raw: true, accept: "application/vnd.github.raw" });
+    POSTS = await res.json();
+  } catch { POSTS = []; }
+  if (!Array.isArray(POSTS)) POSTS = [];
+  renderOverview();
+}
+
+function greeting() {
+  const h = (new Date().getUTCHours() + 7) % 24;
+  return h < 11 ? "Chào buổi sáng" : h < 14 ? "Chào buổi trưa" : h < 18 ? "Chào buổi chiều" : "Chào buổi tối";
+}
+function todayVN() {
+  const s = new Date().toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function renderOverview() {
+  const done = POSTS.filter((p) => p.status === "da_dang");
+  const week = done.filter((p) => Date.now() - new Date(p.publishedAt || p.createdAt) < 7 * 864e5);
+  const withImg = done.filter((p) => p.withImage).length;
+  const cnt = {};
+  done.forEach((p) => (p.coins || []).forEach((c) => (cnt[c] = (cnt[c] || 0) + 1)));
+  const top = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+
+  $("#today").textContent = todayVN();
+  $("#greet").textContent = `${greeting()}${NAME ? ", " + NAME : ""}.`;
+  const pend = PENDING;
+  $("#summary").textContent = pend
+    ? `Có ${pend} bài đang chờ bạn duyệt. Tuần này đã đăng ${week.length} bài.`
+    : done.length ? `Không có bài nào chờ duyệt. Tuần này đã đăng ${week.length} bài.` : "Chưa có bài nào. Tạo bài đầu tiên bằng AI, hoặc tự viết.";
+  $("#hero-actions").innerHTML = pend
+    ? `<button class="btn gold" type="button" data-go="cho-duyet">Duyệt ${pend} bài</button><button class="btn" type="button" data-go="viet-bai">Viết bài</button>`
+    : `<button class="btn gold" type="button" data-go="tao-ai">Tạo bài bằng AI</button><button class="btn" type="button" data-go="viet-bai">Viết bài</button>`;
+
+  $("#stats").innerHTML = `
+    <div><b>${done.length}</b><span>Bài đã đăng</span></div>
+    <div><b>${week.length}</b><span>Trong 7 ngày</span></div>
+    <div><b>${done.length ? Math.round((withImg / done.length) * 100) : 0}%</b><span>Bài có ảnh</span></div>
+    <div><b>${top ? "$" + esc(top[0]) : "—"}</b><span>${top ? `Viết nhiều nhất, ${top[1]} bài` : "Coin viết nhiều nhất"}</span></div>`;
+
+  const days = [];
+  for (let i = 13; i >= 0; i--) days.push({ d: new Date(Date.now() + 7 * 3600e3 - i * 864e5).toISOString().slice(0, 10), n: 0 });
+  done.forEach((p) => {
+    const d = new Date(new Date(p.publishedAt || p.createdAt).getTime() + 7 * 3600e3).toISOString().slice(0, 10);
+    const x = days.find((y) => y.d === d); if (x) x.n++;
+  });
+  const max = Math.max(1, ...days.map((x) => x.n));
+  $("#bars").innerHTML = days.map((x, i) =>
+    `<div class="${x.n ? "" : "zero"}" style="height:${x.n ? (x.n / max) * 100 : 2}%" title="${x.d}: ${x.n} bài">${i % 3 === 1 || i === 13 ? `<span>${+x.d.slice(8)}/${+x.d.slice(5, 7)}</span>` : ""}</div>`).join("");
+  renderHistory();
+}
+
+function renderHistory() {
+  const f = $("#hist-filter").value;
+  const rows = POSTS.filter((p) => f === "all" || p.status === f).slice(0, 60);
+  const el = $("#hist");
+  if (!rows.length) { el.innerHTML = `<div class="empty"><b>Chưa có bài nào</b>Bài đã đăng và bài chờ duyệt sẽ hiện ở đây.</div>`; return; }
+  el.innerHTML = rows.map((p) => `
+    <div class="item">
+      ${p.card ? `<img class="thumb" data-path="${esc(p.card)}" alt="">` : `<div class="thumb"></div>`}
+      <div>
+        <div class="meta">
+          <span class="tag ${p.status === "da_dang" ? "ok" : "wait"}">${STATUS[p.status] || esc(p.status)}</span>
+          <span>${TYPE[p.type] || esc(p.type || "")}</span>
+          <span class="coins">${(p.coins || []).map((c) => "$" + esc(c)).join(" ")}</span>
+          <span>${fmt(p.publishedAt || p.createdAt)}</span>
+          ${p.source === "template" ? `<span class="tag">bài mẫu</span>` : ""}
+          ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">Xem trên Square</a>` : ""}
+        </div>
+        <p>${esc(p.preview || "")}${(p.preview || "").length >= 220 ? "…" : ""}</p>
+      </div>
+    </div>`).join("");
+  fillImages(el);
+}
+
+// ================= Chờ duyệt =================
+async function loadDrafts() {
+  const el = $("#drafts");
+  el.innerHTML = `<div class="empty">Đang tải…</div>`;
+  try {
+    const issues = (await gh(`/repos/${REPO}/issues?labels=nhap&state=open&per_page=30`)).filter((i) => !i.pull_request);
+    setBadge(issues.length);
+    if (!issues.length) { el.innerHTML = `<div class="card empty"><b>Không có bài nào chờ duyệt</b>Bot tạo bài lúc 7:41 và 19:41 mỗi ngày, hoặc bạn tạo ngay ở mục Tạo bằng AI.</div>`; return; }
+    el.innerHTML = "";
+    for (const is of issues) el.appendChild(draftCard(is));
+    fillImages(el);
+  } catch (e) { el.innerHTML = `<div class="card empty"><b>Không tải được bài</b>${esc(e.message)}</div>`; }
+}
+function setBadge(n) { PENDING = n; const b = $("#badge"); b.textContent = n; b.classList.toggle("hide", !n); }
+
+function draftCard(is) {
+  const parsed = parseIssue(is.body || "");
+  const div = document.createElement("article");
+  div.className = "card";
+  if (!parsed) {
+    div.innerHTML = `<b>#${is.number}</b> ${esc(is.title)}<p class="mute small">Không đúng định dạng bản nháp. <a href="${esc(is.html_url)}" target="_blank" rel="noopener">Mở trên GitHub</a></p>`;
+    return div;
+  }
+  const { post, meta } = parsed;
+  const pending = (is.labels || []).some((l) => l.name === "duyet");
+  const warns = [...(is.body || "").matchAll(/^> ⚠️ (.*)$/gm)].map((m) => m[1]);
+  const src = meta.source === "template" ? "Bài mẫu dự phòng" : meta.source === "manual" ? "Bài viết tay" : "Bài do AI soạn";
+  div.innerHTML = `
+    <div class="draft">
+      <div>
+        <h3>${esc(TYPE[meta.type] || meta.type || "Bài viết")} <span class="coins">${(meta.coins || []).map((c) => "$" + esc(c)).join(" ")}</span></h3>
+        <div class="meta"><span>${fmt(meta.createdAt || is.created_at)}</span><span>${src}</span><a href="${esc(is.html_url)}" target="_blank" rel="noopener">#${is.number} trên GitHub</a></div>
+        ${warns.map((w) => `<div class="warn-note">${esc(w)}</div>`).join("")}
+        <div class="editor"><textarea aria-label="Nội dung bài #${is.number}">${esc(post)}</textarea></div>
+        <div class="checks"></div>
+        <div class="actions">
+          <button class="btn ghost-rose" data-a="drop" type="button">Bỏ bài</button>
+          <span class="sp"></span>
+          <button class="btn" data-a="save" type="button">Lưu</button>
+          <button class="btn gold" data-a="approve" type="button">Duyệt &amp; đăng</button>
+        </div>
+        <div class="status">${pending ? "Đang đăng…" : ""}</div>
+      </div>
+      ${meta.card ? `<div class="side-img"><img data-path="${esc(meta.card)}" alt="Ảnh biểu đồ đính kèm"><label class="check"><input type="checkbox" class="use-card" checked> Đăng kèm ảnh này</label></div>` : ""}
+    </div>`;
+  const ta = $("textarea", div), checks = $(".checks", div), status = $(".status", div);
+  const update = () => renderChecks(checks, checkPost(ta.value, REQUIRE_NOTE));
+  ta.addEventListener("input", update); update();
+  ta.addEventListener("focus", () => {
+    const i = ta.value.indexOf(NOTE);
+    if (i >= 0 && ta.selectionStart === 0 && ta.selectionEnd === 0) ta.setSelectionRange(i, i + NOTE.length);
+  }, { once: true });
+
+  const save = async () => {
+    const m = { ...meta };
+    const uc = $(".use-card", div);
+    if (uc && !uc.checked) m.card = null;
+    is = await gh(`/repos/${REPO}/issues/${is.number}`, { method: "PATCH", body: { body: rebuildIssue(is.body, ta.value, m) } });
+  };
+  let confirmDrop = false;
+  div.addEventListener("click", async (ev) => {
+    const btn = ev.target.closest("button[data-a]"); if (!btn) return;
+    const a = btn.dataset.a;
+    if (a === "drop" && !confirmDrop) { confirmDrop = true; btn.textContent = "Bấm lần nữa để bỏ"; setTimeout(() => { confirmDrop = false; btn.textContent = "Bỏ bài"; }, 4000); return; }
+    const btns = $$("button", div); btns.forEach((b) => (b.disabled = true));
+    let keepDisabled = false;
+    try {
+      if (a === "save") { await save(); toast("Đã lưu"); }
+      if (a === "drop") {
+        await gh(`/repos/${REPO}/issues/${is.number}`, { method: "PATCH", body: { state: "closed", state_reason: "not_planned" } });
+        div.remove(); toast("Đã bỏ bài"); refreshBadge();
+      }
+      if (a === "approve") {
+        const r = checkPost(ta.value, REQUIRE_NOTE);
+        if (!r.ok) { toast("Bài chưa đạt: " + r.items.filter((x) => x[0] === "err").map((x) => x[1]).join(", "), 4500); return; }
+        await save();
+        try { await gh(`/repos/${REPO}/issues/${is.number}/labels/duyet`, { method: "DELETE" }); } catch {}
+        await gh(`/repos/${REPO}/issues/${is.number}/labels`, { method: "POST", body: { labels: ["duyet"] } });
+        status.textContent = "Đã duyệt. Bot đang đăng, khoảng 30 đến 60 giây…";
+        keepDisabled = true;
+        watchResult(is.number, status, div);
+      }
+    } catch (e) { toast("Lỗi: " + e.message, 4500); }
+    finally { if (!keepDisabled) btns.forEach((b) => (b.disabled = false)); }
+  });
+  if (pending) { $$("button", div).forEach((b) => (b.disabled = true)); watchResult(is.number, status, div); }
+  return div;
+}
+
+async function watchResult(num, statusEl, card) {
+  const started = Date.now();
+  const tick = async () => {
+    try {
+      const cs = await gh(`/repos/${REPO}/issues/${num}/comments?per_page=20`);
+      const last = cs.reverse().find((c) => /Đã đăng|Chưa đăng|Lỗi khi đăng/.test(c.body));
+      if (last && new Date(last.created_at) > new Date(started - 120000)) {
+        const link = (last.body.match(/https:\/\/\S+/) || [])[0];
+        if (/✅/.test(last.body)) {
+          statusEl.innerHTML = `<span style="color:var(--jade)">Đã đăng lên Binance Square.</span> ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">Xem bài</a>` : ""}`;
+          loadPosts(); refreshBadge();
+        } else {
+          statusEl.innerHTML = `<span style="color:var(--rose)">${esc(last.body)}</span>`;
+          $$("button", card).forEach((b) => (b.disabled = false));
+        }
+        return;
+      }
+    } catch {}
+    if (Date.now() - started < 180000) setTimeout(tick, 6000);
+    else { statusEl.textContent = "Chưa có kết quả sau 3 phút. Xem nhật ký ở mục Tạo bằng AI."; $$("button", card).forEach((b) => (b.disabled = false)); }
+  };
+  setTimeout(tick, 8000);
+}
+async function refreshBadge() {
+  try { setBadge((await gh(`/repos/${REPO}/issues?labels=nhap&state=open&per_page=50`)).filter((i) => !i.pull_request).length); } catch {}
+  if (!$("#tong-quan").classList.contains("hide")) renderOverview();
+}
+
+// ================= Viết bài =================
+function wUpdate() { renderChecks($("#w-checks"), checkPost($("#w-body").value, false)); }
+async function ensureLabels() {
+  for (const [name, color, description] of [["nhap", "FBCA04", "Bản nháp chờ duyệt"], ["duyet", "0E8A16", "Duyệt để đăng lên Binance Square"]]) {
+    try { await gh(`/repos/${REPO}/labels`, { method: "POST", body: { name, color, description } }); } catch {}
+  }
+}
+async function createManual(postNow) {
+  const text = $("#w-body").value;
+  const r = checkPost(text, false);
+  if (!r.ok) { toast("Bài chưa đạt: " + r.items.filter((x) => x[0] === "err").map((x) => x[1]).join(", "), 4500); return; }
+  const type = $("#w-type").value;
+  const meta = { type, coins: cashtags(text), createdAt: new Date().toISOString(), model: "viet-tay", source: "manual", card: null };
+  const title = `[Nháp] ${TYPE[type]} – ${meta.coins.map((c) => "$" + c).join(" ")} – viết tay`;
+  $$("#viet-bai button").forEach((b) => (b.disabled = true));
+  try {
+    await ensureLabels();
+    const is = await gh(`/repos/${REPO}/issues`, { method: "POST", body: { title, body: newIssueBody(text, meta), labels: ["nhap"] } });
+    if (postNow) { await gh(`/repos/${REPO}/issues/${is.number}/labels`, { method: "POST", body: { labels: ["duyet"] } }); toast("Đã gửi đăng. Theo dõi ở mục Chờ duyệt.", 4000); }
+    else toast("Đã lưu nháp ở mục Chờ duyệt");
+    $("#w-body").value = ""; wUpdate();
+    show("cho-duyet");
+  } catch (e) { toast("Lỗi: " + e.message, 4500); }
+  finally { $$("#viet-bai button").forEach((b) => (b.disabled = false)); }
+}
+
+// ================= Tạo bằng AI =================
+async function runAI() {
+  const btn = $("#g-run"); btn.disabled = true;
+  try {
+    await gh(`/repos/${REPO}/actions/workflows/tao-bai.yml/dispatches`, { method: "POST", body: { ref: BRANCH, inputs: { post_type: $("#g-type").value, dry_run: String($("#g-dry").checked) } } });
+    toast("Đã bắt đầu tạo bài. Khoảng 1 đến 2 phút nữa xem mục Chờ duyệt.", 4500);
+    setTimeout(loadRuns, 4000);
+  } catch (e) { toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Actions đọc và ghi." : ""), 5000); }
+  finally { btn.disabled = false; }
+}
+async function loadRuns() {
+  const el = $("#runs");
+  try {
+    const { workflow_runs: runs } = await gh(`/repos/${REPO}/actions/runs?per_page=12`);
+    if (!runs.length) { el.innerHTML = `<div class="empty">Chưa có lần chạy nào.</div>`; return; }
+    const label = { success: "Thành công", failure: "Lỗi", cancelled: "Đã huỷ", skipped: "Bỏ qua", in_progress: "Đang chạy", queued: "Đang chờ" };
+    el.innerHTML = runs.map((r) => {
+      const st = r.status === "completed" ? r.conclusion : r.status;
+      return `<div class="run"><span class="dot ${esc(st)}"></span><div><div>${esc(r.name)}</div><div class="mute small">${fmt(r.created_at)}, ${esc(label[st] || st)}</div></div><span class="sp"></span><a class="small" href="${esc(r.html_url)}" target="_blank" rel="noopener">Nhật ký</a></div>`;
+    }).join("");
+    if (runs.some((r) => r.status !== "completed")) { clearTimeout(loadRuns._t); loadRuns._t = setTimeout(loadRuns, 8000); }
+  } catch (e) { el.innerHTML = `<div class="empty">Không tải được: ${esc(e.message)}</div>`; }
+}
+
+// ================= Cài đặt =================
+async function loadVars() {
+  for (const inp of $$("input[data-var]")) {
+    let val = inp.dataset.default || inp.dataset.off;
+    try { val = (await gh(`/repos/${REPO}/actions/variables/${inp.dataset.var}`)).value; } catch {}
+    inp.checked = val === inp.dataset.on;
+    if (inp.dataset.var === "REQUIRE_NOTE") REQUIRE_NOTE = inp.checked;
+  }
+}
+async function setVar(name, value) {
+  try { await gh(`/repos/${REPO}/actions/variables/${name}`, { method: "PATCH", body: { name, value } }); }
+  catch (e) { if (e.status === 404) await gh(`/repos/${REPO}/actions/variables`, { method: "POST", body: { name, value } }); else throw e; }
+}
+
+// ================= Điều hướng =================
+function show(tab) {
+  if (!TAB_TITLE[tab]) tab = "tong-quan";
+  $$("#tabs button").forEach((b) => { b.classList.toggle("on", b.dataset.t === tab); b.setAttribute("aria-current", b.dataset.t === tab ? "page" : "false"); });
+  $$("main section").forEach((s) => s.classList.toggle("hide", s.id !== tab));
+  $("#m-title").textContent = TAB_TITLE[tab];
+  if (tab === "cho-duyet") loadDrafts();
+  if (tab === "tao-ai") loadRuns();
+  if (tab === "tong-quan") loadPosts();
+  if (location.hash.slice(1) !== tab) history.replaceState(null, "", "#" + tab);
+  window.scrollTo({ top: 0 });
+}
+
+// ================= Đăng nhập / thiết lập =================
+let SETUP = false;
+function lockScreen(mode) {
+  SETUP = mode === "setup";
+  $("#app").classList.add("hide"); $("#lock").classList.remove("hide");
+  $("#setup-fields").classList.toggle("hide", !SETUP);
+  $("#lock-title").textContent = SETUP ? "Thiết lập thiết bị" : "Bàn biên tập Square";
+  $("#lock-lead").textContent = SETUP
+    ? "Lần đầu dùng trên thiết bị này. Đặt email và mật khẩu đăng nhập, rồi dán GitHub token một lần."
+    : "Đăng nhập để xem và duyệt bài.";
+  $("#l-submit").textContent = SETUP ? "Lưu và đăng nhập" : "Đăng nhập";
+  $("#l-pass").autocomplete = SETUP ? "new-password" : "current-password";
+  $("#l-repo").value = DEFAULT_REPO;
+  const v = getVault();
+  if (v && !SETUP) $("#l-email").value = v.email;
+  $("#lock-foot").innerHTML = SETUP
+    ? (v ? `<button type="button" id="to-login">Quay lại đăng nhập</button>` : "")
+    : `Quên mật khẩu hoặc dùng token khác? <button type="button" id="to-setup">Thiết lập lại</button>`;
+  $("#lock-err").textContent = "";
+  ($("#l-email").value ? $("#l-pass") : $("#l-email")).focus();
+}
+
+async function unlockWith(session) {
+  TOKEN = session.token; REPO = session.repo || DEFAULT_REPO; EMAIL = session.email || ""; NAME = session.name || "";
+  const info = await gh(`/repos/${REPO}`);
+  BRANCH = info.default_branch || "main";
+  const me = await gh(`/user`).catch(() => null);
+  ME = me?.login || "";
+  ls.set(sessionStorage, SESSION_KEY, JSON.stringify(session));
+  $("#lock").classList.add("hide"); $("#app").classList.remove("hide");
+  $("#who").textContent = EMAIL || ME;
+  $("#s-repo-name").textContent = REPO;
+  $("#l-pass").value = ""; $("#l-pass2").value = ""; $("#l-token").value = "";
+  loadVars(); refreshBadge();
+  const want = location.hash.slice(1);
+  show(TAB_TITLE[want] ? want : "tong-quan");
+}
+
+function lockNow(message) {
+  TOKEN = ""; imgCache.forEach((u) => u && URL.revokeObjectURL(u)); imgCache.clear();
+  ls.set(sessionStorage, SESSION_KEY, null);
+  POSTS = [];
+  lockScreen(getVault() ? "login" : "setup");
+  if (message) $("#lock-err").textContent = message;
+}
+
+$("#lock-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("#l-email").value.trim(), pass = $("#l-pass").value, err = $("#lock-err");
+  err.textContent = "";
+  if (!/^\S+@\S+\.\S+$/.test(email)) { err.textContent = "Nhập email hợp lệ."; return; }
+  if (!pass) { err.textContent = "Nhập mật khẩu."; return; }
+  const btn = $("#l-submit"); btn.disabled = true;
+  try {
+    if (SETUP) {
+      const repo = $("#l-repo").value.trim().replace(/^https:\/\/github\.com\//, "").replace(/\/$/, "");
+      const token = $("#l-token").value.trim();
+      if (pass !== $("#l-pass2").value) { err.textContent = "Hai lần nhập mật khẩu không khớp."; return; }
+      if (pass.length < 8) { err.textContent = "Mật khẩu cần ít nhất 8 ký tự."; return; }
+      if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { err.textContent = "Repo có dạng chủ/tên, ví dụ ten-ban/square-vn-bot."; return; }
+      if (!token) { err.textContent = "Dán GitHub token."; return; }
+      const session = { token, repo, email: email.toLowerCase(), name: $("#l-name").value.trim() };
+      TOKEN = token; REPO = repo;
+      try { await gh(`/repos/${repo}`); }
+      catch (x) { TOKEN = ""; err.textContent = x.status === 401 ? "Token không hợp lệ." : x.status === 404 ? "Không thấy repo, hoặc token chưa được cấp quyền cho repo này." : "Không kết nối được GitHub: " + x.message; return; }
+      ls.set(localStorage, VAULT_KEY, JSON.stringify(await sealVault(email, pass, session)));
+      await unlockWith(session);
+      toast("Đã thiết lập thiết bị này");
+    } else {
+      const v = getVault();
+      if (!v) { lockScreen("setup"); return; }
+      let session;
+      try { session = await openVault(v, email, pass); }
+      catch { err.textContent = "Email hoặc mật khẩu không đúng."; $("#l-pass").select(); return; }
+      try { await unlockWith(session); }
+      catch (x) { TOKEN = ""; err.textContent = x.status === 401 ? "Token đã hết hạn. Bấm Thiết lập lại để dán token mới." : "Không kết nối được GitHub: " + x.message; }
+    }
+  } finally { btn.disabled = false; }
+});
+
+$("#lock-foot").addEventListener("click", (e) => {
+  if (e.target.id === "to-setup") lockScreen("setup");
+  if (e.target.id === "to-login") lockScreen("login");
+});
+
+// ================= Gắn sự kiện =================
+$("#tabs").addEventListener("click", (e) => { const t = e.target.closest("button")?.dataset.t; if (t) show(t); });
+document.addEventListener("click", (e) => { const g = e.target.closest("[data-go]")?.dataset.go; if (g) show(g); });
+window.addEventListener("hashchange", () => { const t = location.hash.slice(1); if (TOKEN && TAB_TITLE[t] && $("#" + t).classList.contains("hide")) show(t); });
+$("#hist-filter").addEventListener("change", renderHistory);
+$("#reload-drafts").addEventListener("click", loadDrafts);
+$("#reload-runs").addEventListener("click", loadRuns);
+$("#w-body").addEventListener("input", wUpdate);
+$("#w-save").addEventListener("click", () => createManual(false));
+$("#w-post").addEventListener("click", () => createManual(true));
+$("#g-run").addEventListener("click", runAI);
+$("#lock-btn").addEventListener("click", () => lockNow());
+$("#s-logout").addEventListener("click", () => lockNow());
+let forgetArmed = false;
+$("#s-forget").addEventListener("click", (e) => {
+  if (!forgetArmed) { forgetArmed = true; e.target.textContent = "Bấm lần nữa để xoá"; setTimeout(() => { forgetArmed = false; e.target.textContent = "Xoá thiết bị này"; }, 4000); return; }
+  ls.set(localStorage, VAULT_KEY, null); lockNow(); toast("Đã xoá token khỏi thiết bị này");
+});
+$$("input[data-var]").forEach((inp) => inp.addEventListener("change", async () => {
+  try {
+    await setVar(inp.dataset.var, inp.checked ? inp.dataset.on : inp.dataset.off);
+    if (inp.dataset.var === "REQUIRE_NOTE") REQUIRE_NOTE = inp.checked;
+    toast("Đã lưu cài đặt");
+  } catch (e) { inp.checked = !inp.checked; toast("Lỗi: " + e.message + (e.status === 403 ? ". Token cần quyền Variables." : ""), 5000); }
+}));
+
+// ================= Khởi động =================
+(async function init() {
+  wUpdate();
+  let session = null;
+  try { session = JSON.parse(ls.get(sessionStorage, SESSION_KEY) || "null"); } catch {}
+  if (session?.token) {
+    try { await unlockWith(session); return; } catch { ls.set(sessionStorage, SESSION_KEY, null); }
+  }
+  lockScreen(getVault() ? "login" : "setup");
+})();
+</script>
+</body>
+</html>
