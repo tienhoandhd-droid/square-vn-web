@@ -1024,9 +1024,9 @@ async function loadSetups() {
   const rng = (a) => (Array.isArray(a) ? `${num(a[0])} – ${num(a[1])}` : "?");
   const label = { mo: "Đang mở", dat: "Đạt TP1", sai: "Chạm SL", het_han: "Hết hạn" }, dot = { mo: "queued", dat: "success", sai: "failure", het_han: "" };
   listEl.innerHTML = list.slice(0, 25).map((s) => `<div class="run"><span class="dot ${dot[s.status] || ""}"></span><div><div><b>${esc(s.coin)}</b> ${s.dir === "tăng" ? "📈 tăng" : "📉 giảm"}${s.score != null ? ` · điểm ${esc(String(s.score))}/10` : ""}${s.venue === "futures" ? " · chỉ có futures" : ""}${s.posted === false ? " · <span style=\"color:var(--amber)\">không đăng</span>" : s.draft ? " · <span style=\"color:var(--amber)\">nháp chờ duyệt</span>" : ""}${s.ruleOk === false ? " · gần đạt" : ""}</div>`
-    + `<div class="mute small">Entry ${rng(s.zone)} · SL ${s.sl ? rng(s.sl) : num(s.invalid)} · TP1 ${s.tp1 ? rng(s.tp1) : num(s.target)}${s.tp2 ? ` · TP2 ${rng(s.tp2)}` : ""}</div>`
+    + `<div class="mute small">Entry ${rng(s.zone)} · SL ${s.sl ? rng(s.sl) : num(s.invalid)} · TP1 ${s.tp1 ? rng(s.tp1) : num(s.target)}${s.tp2 ? ` · TP2 ${rng(s.tp2)}` : ""}${s.tp3 ? ` · TP3 ${rng(s.tp3)}` : ""}</div>`
     + (s.ai ? `<div class="mute small">AI ${s.ai.decision === "dang" ? "duyệt" : "loại"} (tin cậy ${esc(String(s.ai.confidence))}/100): ${esc(s.ai.reason || "")}</div>` : "")
-    + `<div class="mute small">${fmt(s.createdAt)}, ${esc(label[s.status] || s.status)}${s.resultPct != null ? ` (${s.resultPct > 0 ? "+" : ""}${String(s.resultPct).replace(".", ",")}%)` : ""}</div></div>`
+    + `<div class="mute small">${fmt(s.createdAt)}, ${esc(s.status === "dat" && s.reached > 1 ? `Đạt TP${s.reached}` : label[s.status] || s.status)}${s.resultPct != null ? ` (${s.resultPct > 0 ? "+" : ""}${String(s.resultPct).replace(".", ",")}%)` : ""}</div></div>`
     + `<span class="sp"></span>${s.url ? `<a class="small" href="${esc(s.url)}" target="_blank" rel="noopener">Xem bài</a>` : ""}</div>`).join("");
 }
 async function loadRuns() {
