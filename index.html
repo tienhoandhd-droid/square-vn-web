@@ -1010,10 +1010,12 @@ async function loadSetups() {
   }
   if (!Array.isArray(list) || !list.length) { box.textContent = "Chưa có kịch bản nào được đăng."; listEl.innerHTML = ""; return; }
   const done = list.filter((s) => s.status && s.status !== "mo");
-  const grp = (rows) => { const w = rows.filter((s) => s.status === "dat").length, l = rows.filter((s) => s.status === "sai").length; return { n: rows.length, w, l, rate: w + l ? Math.round((w / (w + l)) * 100) : null }; };
-  const part = (name, g) => (g.n ? `${name}: ${g.n} kịch bản, đạt <b>${g.w}</b>, sai <b>${g.l}</b>${g.rate !== null ? `, tỉ lệ đạt <b>${g.rate}%</b>` : ""}` : "");
+  // Cùng luật với scripts/setups.mjs (rOf, setupStats): R = % kết quả chia khoảng rủi ro tới SL (chạm SL = -1R); lệnh chờ không khớp không tính vào nhóm.
+  const rOf = (s) => { if (s.unfilled || typeof s.resultPct !== "number") return null; const risk = Math.abs(s.invalid / s.price - 1) * 100; return risk > 0 ? s.resultPct / risk : null; };
+  const grp = (all) => { const rows = all.filter((s) => !s.unfilled), w = rows.filter((s) => s.status === "dat").length, l = rows.filter((s) => s.status === "sai").length, rs = rows.map(rOf).filter((v) => v !== null); return { n: rows.length, w, l, rate: w + l ? Math.round((w / (w + l)) * 100) : null, r: rs.length ? rs.reduce((a, v) => a + v, 0) / rs.length : null }; };
+  const part = (name, g) => (g.n ? `${name}: ${g.n} kịch bản, đạt <b>${g.w}</b>, sai <b>${g.l}</b>${g.rate !== null ? `, tỉ lệ đạt <b>${g.rate}%</b>` : ""}${g.r !== null ? `, trung bình <b>${g.r.toFixed(2).replace(".", ",")}R</b>` : ""}` : "");
   // Bài đã đăng so với kịch bản không đăng (AI loại, hoặc gần đạt mà AI không duyệt): dùng để biết luật và AI ai đúng hơn.
-  const posted = done.filter((s) => s.posted !== false);
+  const posted = done.filter((s) => s.posted !== false && !s.draft); // nháp chờ duyệt chưa tính là đã đăng
   const all = grp(posted);
   box.innerHTML = `Đang mở: <b>${list.length - done.length}</b>. ` + ([part("Bài đã đăng", all), part("chiều tăng", grp(posted.filter((s) => s.dir === "tăng"))), part("chiều giảm", grp(posted.filter((s) => s.dir === "giảm"))), part("coin đi riêng", grp(posted.filter((s) => s.independent))), part("coin theo BTC", grp(posted.filter((s) => !s.independent))),
     part("luật đạt", grp(done.filter((s) => s.ruleOk !== false))), part("gần đạt", grp(done.filter((s) => s.ruleOk === false))), part("AI duyệt", grp(done.filter((s) => s.ai?.decision === "dang"))), part("AI loại", grp(done.filter((s) => s.ai?.decision === "bo")))].filter(Boolean).join(" · ") || "Chưa có kịch bản nào có kết quả.")
@@ -1021,7 +1023,7 @@ async function loadSetups() {
   const num = (v) => Number(Number(v).toPrecision(4)).toLocaleString("vi-VN", { maximumFractionDigits: 10 });
   const rng = (a) => (Array.isArray(a) ? `${num(a[0])} – ${num(a[1])}` : "?");
   const label = { mo: "Đang mở", dat: "Đạt TP1", sai: "Chạm SL", het_han: "Hết hạn" }, dot = { mo: "queued", dat: "success", sai: "failure", het_han: "" };
-  listEl.innerHTML = list.slice(0, 25).map((s) => `<div class="run"><span class="dot ${dot[s.status] || ""}"></span><div><div><b>${esc(s.coin)}</b> ${s.dir === "tăng" ? "📈 tăng" : "📉 giảm"}${s.score != null ? ` · điểm ${esc(String(s.score))}/10` : ""}${s.venue === "futures" ? " · chỉ có futures" : ""}${s.posted === false ? " · <span style=\"color:var(--amber)\">không đăng</span>" : ""}${s.ruleOk === false ? " · gần đạt" : ""}</div>`
+  listEl.innerHTML = list.slice(0, 25).map((s) => `<div class="run"><span class="dot ${dot[s.status] || ""}"></span><div><div><b>${esc(s.coin)}</b> ${s.dir === "tăng" ? "📈 tăng" : "📉 giảm"}${s.score != null ? ` · điểm ${esc(String(s.score))}/10` : ""}${s.venue === "futures" ? " · chỉ có futures" : ""}${s.posted === false ? " · <span style=\"color:var(--amber)\">không đăng</span>" : s.draft ? " · <span style=\"color:var(--amber)\">nháp chờ duyệt</span>" : ""}${s.ruleOk === false ? " · gần đạt" : ""}</div>`
     + `<div class="mute small">Entry ${rng(s.zone)} · SL ${s.sl ? rng(s.sl) : num(s.invalid)} · TP1 ${s.tp1 ? rng(s.tp1) : num(s.target)}${s.tp2 ? ` · TP2 ${rng(s.tp2)}` : ""}</div>`
     + (s.ai ? `<div class="mute small">AI ${s.ai.decision === "dang" ? "duyệt" : "loại"} (tin cậy ${esc(String(s.ai.confidence))}/100): ${esc(s.ai.reason || "")}</div>` : "")
     + `<div class="mute small">${fmt(s.createdAt)}, ${esc(label[s.status] || s.status)}${s.resultPct != null ? ` (${s.resultPct > 0 ? "+" : ""}${String(s.resultPct).replace(".", ",")}%)` : ""}</div></div>`
