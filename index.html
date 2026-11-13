@@ -480,11 +480,11 @@ const NOTE_EN = "[Write 1–2 sentences of your own take here]";
 const LANG_LABEL = { vi: "VI", en: "EN" };
 const QUICK_TAGS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE"];
 const IMG_MAX = 2 * 1024 * 1024;
-const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", chuyen_sau: "Phân tích chuyên sâu", khac: "Bài tự do" };
+const TYPE = { diem_tin: "Điểm tin", phan_tich_coin: "Phân tích coin", bien_dong: "Biến động mạnh", chuyen_sau: "Phân tích chuyên sâu", btc_ngay: "BTC, ETH hằng ngày", khac: "Bài tự do" };
 // Loại coin của bài chuyên sâu (meta.profile): quyết định giọng phân tích. Coin lớn không cần nhãn riêng.
 const PROFILE = { gainer: "Top tăng 24h", loser: "Top giảm 24h", volatile: "Top biến động 24h", smart: "Dòng tiền thông minh", mover: "Biến động mạnh 24h", small: "Coin vốn hoá nhỏ" };
 // Giới hạn độ dài theo loại bài (giống LIMITS trong scripts/validate.mjs)
-const LIMITS = { chuyen_sau: { min: 600, max: 1800 } };
+const LIMITS = { chuyen_sau: { min: 600, max: 1800 }, btc_ngay: { min: 600, max: 2040 } };
 // Loại bài đăng dạng bài dài có tiêu đề (giống TITLED trong validate.mjs). Hiện không loại nào dùng.
 const TITLED = new Set();
 const limitsOf = (type) => LIMITS[type] || { min: 200, max: 1800 };
